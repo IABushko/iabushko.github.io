@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Case File – MLS – LearnWithMD</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="../state.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Special+Elite&display=swap');
+
+    body {
+      margin: 0;
+      background: #4a3624;
+      font-family: "Inter", system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .case-topbar {
+      display: flex;
+      align-items: center;
+      padding: 14px 24px;
+      background: rgba(58,42,28,0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .case-topbar a {
+      color: #d4b896;
+      font-size: 0.85rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .case-topbar a:hover { color: #fff; }
+
+    /* ── Folder Wrapper ── */
+    .folder-wrap {
+      max-width: 960px;
+      margin: 28px auto;
+      padding: 0 20px 48px;
+    }
+
+    /* ── Manila Folder (outer binder) ── */
+    .manila-binder {
+      background: linear-gradient(180deg, #c9a87c 0%, #b8956a 100%);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    /* Folder tab */
+    .folder-tab {
+      position: absolute;
+      top: -22px;
+      left: 36px;
+      background: linear-gradient(180deg, #d4b896, #c9a87c);
+      border-radius: 8px 8px 0 0;
+      padding: 4px 20px 2px;
+      border: 1px solid #b8956a;
+      border-bottom: none;
+    }
+    .folder-tab-text {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.7rem;
+      color: #6b4c30;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── 2-Page Spread ── */
+    .page-spread {
+      display: grid;
+      grid-template-columns: 1fr 20px 1fr;
+      min-height: 520px;
+      border-radius: 6px;
+      position: relative;
+    }
+
+    /* Center spine/gutter */
+    .page-gutter {
+      background: linear-gradient(90deg, #a6825a, #b8956a 40%, #b8956a 60%, #a6825a);
+      position: relative;
+      z-index: 10;
+      overflow: visible;
+    }
+    /* Subtle center crease */
+    .page-gutter::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0; bottom: 0;
+      width: 2px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.12);
+      z-index: 1;
+    }
+    .page-gutter .spring-col {
+      position: absolute;
+      top: 20px;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+      z-index: 12;
+    }
+    .page-gutter .spring-col img {
+      width: 75px;
+      max-width: none;
+      display: block;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.35));
+    }
+
+    /* ── Left Page (Illustration) ── */
+    .page-left {
+      background: linear-gradient(135deg, #fdf6e3 0%, #f5ecda 60%, #efe5d0 100%);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 32px 28px;
+      overflow: hidden;
+    }
+    /* Page shadow near spine */
+    .page-left::after {
+      content: "";
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 24px;
+      background: linear-gradient(90deg, transparent, rgba(0,0,0,0.05));
+      pointer-events: none;
+    }
+    /* Ruled lines */
+    .page-left::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px, transparent 29px,
+        var(--char-line-faint, #e8998d22) 29px, var(--char-line-faint, #e8998d22) 30px
+      );
+      background-position: 0 10px;
+      pointer-events: none;
+    }
+
+    /* Left page header */
+    .left-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 2;
+    }
+    .left-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.9rem;
+      line-height: 1;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+    .left-header-text h2 {
+      font-family: 'Caveat', cursive;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #3b2d1f;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .left-header-text p {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.72rem;
+      color: #8b7355;
+      margin: 2px 0 0;
+      letter-spacing: 0.05em;
+    }
+
+    /* Illustration area — polaroid style */
+    .illust-polaroid {
+      background: #fff;
+      padding: 12px 12px 32px;
+      box-shadow: 2px 4px 14px rgba(0,0,0,0.15);
+      transform: rotate(-1.5deg);
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+    }
+    .illust-inner {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .illust-emoji {
+      font-size: 4.5rem;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.1));
+    }
+    .illust-video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      border-radius: 4px;
+      background: #000;
+    }
+    .sound-toggle {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.08);
+      color: #5c4a2f;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .sound-toggle:hover { background: rgba(0,0,0,0.15); }
+    .sound-toggle svg { width: 18px; height: 18px; }
+    /* Corner tape strips */
+    .tape-strip {
+      position: absolute;
+      width: 40px;
+      height: 14px;
+      background: rgba(255,220,120,0.6);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+      z-index: 3;
+    }
+    .tape-tl { top: -4px; left: -6px; transform: rotate(-25deg); }
+    .tape-tr { top: -4px; right: -6px; transform: rotate(20deg); }
+    .tape-bl { bottom: 26px; left: -6px; transform: rotate(20deg); }
+    .tape-br { bottom: 26px; right: -6px; transform: rotate(-22deg); }
+
+    .illust-caption {
+      font-family: 'Caveat', cursive;
+      font-size: 1rem;
+      color: #5c4a2f;
+      text-align: center;
+      margin-top: 8px;
+      position: absolute;
+      bottom: 8px;
+      left: 0; right: 0;
+    }
+
+    /* ── Second Polaroid (symptoms image) ── */
+    .illust-secondary {
+      position: relative;
+      z-index: 2;
+      margin-top: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .secondary-label {
+      font-family: 'Caveat', cursive;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #3b2d1f;
+      line-height: 1.3;
+      flex-shrink: 0;
+      padding-top: 40px;
+    }
+    .secondary-label .arrow {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      transform: rotate(35deg);
+      background: url('../Sources/mls-lab/mls-label-pigtail.png') no-repeat center/contain;
+      vertical-align: middle;
+      margin-left: 15px;
+      margin-right: -30px;
+      position: relative;
+      z-index: 3;
+    }
+    .secondary-polaroid {
+      background: #fff;
+      padding: 6px 6px 8px;
+      box-shadow: 2px 3px 10px rgba(0,0,0,0.15);
+      transform: rotate(1.5deg);
+      position: relative;
+      width: 220px;
+      flex-shrink: 0;
+    }
+    .secondary-inner {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 3px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f0e8;
+    }
+    .secondary-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .secondary-inner .illust-emoji {
+      font-size: 3rem;
+    }
+    /* Small tape strips on secondary */
+    .tape-sm {
+      position: absolute;
+      width: 30px;
+      height: 10px;
+      background: rgba(255,220,120,0.6);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+      z-index: 3;
+    }
+    .tape-sm-tl { top: -3px; left: -12px; transform: rotate(-20deg); }
+    .tape-sm-tr { top: -3px; right: -12px; transform: rotate(18deg); }
+    .tape-sm-bl { bottom: -4px; left: -12px; transform: rotate(15deg); }
+    .tape-sm-br { bottom: -4px; right: -10px; transform: rotate(-20deg); }
+
+    /* Post-it note on left page */
+    .left-postit {
+      position: relative;
+      z-index: 2;
+      margin-top: 32px;
+      padding: 8px 14px;
+      font-family: 'Caveat', cursive;
+      font-size: 1.5rem;
+      color: #5c4a2f;
+      line-height: 1.5;
+      box-shadow: 1px 2px 5px rgba(0,0,0,0.1);
+      transform: rotate(1deg);
+      align-self: flex-start;
+    }
+    .postit-blue { background: #dbeafe; }
+    .postit-purple { background: #ede9fe; }
+    .postit-yellow { background: #fff9c4; }
+    .postit-green { background: #c8e6c9; }
+    .postit-pink { background: #f8bbd0; }
+
+    /* Pin on polaroid */
+    .pin-deco {
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #e74c3c, #c0392b);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.3);
+      z-index: 5;
+    }
+
+    /* ── Right Page (Case Details) ── */
+    .page-right {
+      background: linear-gradient(225deg, #fdf6e3 0%, #f8f0de 50%, #f3e9d2 100%);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 32px 28px;
+      overflow: hidden;
+    }
+    /* Shadow near spine */
+    .page-right::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 24px;
+      background: linear-gradient(270deg, transparent, rgba(0,0,0,0.05));
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Red margin line */
+    .page-right::after {
+      content: "";
+      position: absolute;
+      left: 36px;
+      top: 0; bottom: 0;
+      width: 1.5px;
+      background: var(--char-line-strong, #e8998d55);
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Ruled lines */
+    .page-right-lines {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px, transparent 29px,
+        var(--char-line-faint, #e8998d22) 29px, var(--char-line-faint, #e8998d22) 30px
+      );
+      background-position: 0 10px;
+      pointer-events: none;
+    }
+
+    /* Right page content */
+    .right-content {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding-left: 16px;
+    }
+
+    /* Case number circle */
+    .case-number {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 3px solid #c0392b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Special Elite', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #c0392b;
+      margin-bottom: 8px;
+    }
+    .case-file-heading {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin: 0 0 20px;
+      flex-wrap: wrap;
+    }
+    .case-file-label {
+      font-family: 'Special Elite', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #3b2d1f;
+      margin: 0;
+      white-space: nowrap;
+    }
+    .case-file-subtitle {
+      font-family: 'Special Elite', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #8b7355;
+      margin: 0;
+    }
+
+    /* Section cards on right page */
+    .case-section {
+      background: rgba(255,255,255,0.45);
+      border: 1px solid #e0d6c8;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .section-icon-sm {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      flex-shrink: 0;
+    }
+    .section-icon-sm.blue { background: #dbeafe; color: #2563eb; }
+    .section-icon-sm.red { background: #fee2e2; color: #dc2626; }
+    .section-icon-sm.green { background: #dcfce7; color: #16a34a; }
+    .section-header h3 {
+      margin: 0;
+      font-family: 'Special Elite', monospace;
+      font-size: 0.78rem;
+      color: #3b2d1f;
+      letter-spacing: 0.03em;
+    }
+    .section-text {
+      font-size: 0.84rem;
+      color: #5c4a2f;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    /* Symptoms list */
+    .symptoms-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 12px;
+    }
+    .symptom-chip {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: #5c4a2f;
+      padding: 4px 0;
+      line-height: 1.4;
+    }
+    .symptom-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #dc2626;
+      flex-shrink: 0;
+      margin-top: 0.45em;
+    }
+
+    /* CTA Button */
+    .case-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #000;
+      color: #fff;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s, transform 0.2s;
+      margin-top: auto;
+      font-family: "Inter", system-ui, sans-serif;
+    }
+    .case-cta:hover { background: #222; transform: translateY(-2px); }
+    .case-cta.cta-solved {
+      background: #27ae60;
+      color: #fff;
+    }
+    .case-cta.cta-solved:hover { background: #219653; }
+
+    /* Page curl on right page */
+    .page-curl {
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, transparent 50%, #e8dcc6 50%, #ded2bb 100%);
+      box-shadow: -2px -2px 4px rgba(0,0,0,0.04);
+      z-index: 5;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 760px) {
+      .page-spread {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+      .page-gutter { display: none; }
+      .page-left {
+        border-radius: 6px 6px 0 0;
+        padding: 24px 20px;
+      }
+      .page-left::after { display: none; }
+      .page-right {
+        border-radius: 0 0 6px 6px;
+        padding: 24px 20px;
+      }
+      .page-right::before { display: none; }
+      .page-right::after { left: 20px; }
+      .right-content { padding-left: 8px; }
+      .illust-polaroid { transform: rotate(0deg); }
+      .manila-binder { padding: 10px; }
+      .folder-wrap { padding: 0 12px 36px; margin-top: 16px; }
+    }
+    @media (max-width: 480px) {
+      .page-left, .page-right { padding: 18px 14px; }
+      .left-header-text h2 { font-size: 1.2rem; }
+      .symptoms-list { grid-template-columns: 1fr; }
+      .case-number { width: 40px; height: 40px; font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="case-topbar">
+    <a href="mls-investigation-board.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back to Investigation Board
+    </a>
+  </nav>
+
+  <div class="folder-wrap" id="folderWrap"></div>
+
+  <script>
+    var illustBgs = {
+      stephen: "linear-gradient(135deg, #fef9c3, #fde68a)",
+      colin:   "linear-gradient(135deg, #d1fae5, #a7f3d0)",
+      lisa:    "linear-gradient(135deg, #ede9fe, #ddd6fe)",
+      mona:    "linear-gradient(135deg, #cffafe, #a5f3fc)",
+      vishal:    "linear-gradient(135deg, #e0f2fe, #bae6fd)",
+      stephanie: "linear-gradient(135deg, #fce7f3, #fbcfe8)",
+      coco:      "linear-gradient(135deg, #fef3c7, #fde68a)"
+    };
+    var illustEmojis = {
+      stephen:   "🤥",
+      colin:     "🍔",
+      lisa:      "🍦",
+      mona:      "🏊",
+      vishal:    "🏖️",
+      stephanie: "🤒",
+      coco:      "👁️"
+    };
+    // Character theme colors (see specs/design.md → Character Themes)
+    var characterThemes = {
+      stephen:   "#37662D", // green
+      colin:     "#2F20F4", // saturated blue
+      lisa:      "#230C33", // purple
+      mona:      "#7CDEDC", // mint
+      vishal:    "#F17105", // orange
+      stephanie: "#FCCA46", // yellow
+      coco:      "#FFD2FC"  // pink
+    };
+    function toggleSound(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      var video = document.getElementById('caseVideo');
+      var icon = document.getElementById('soundIcon');
+      if (!video || !icon) return;
+      video.muted = !video.muted;
+      if (video.muted) {
+        // Muted icon (speaker with X)
+        icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
+      } else {
+        // Unmuted icon (speaker with waves)
+        icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/>';
+      }
+    }
+
+    // Case media (keyed by case id)
+    // video: mp4 for the main polaroid (first image)
+    // image2: second image shown below (symptoms/detail illustration)
+    var caseVideos = {
+      stephen: "../Sources/mls-board/mls-stephen-001.mp4",
+      colin:   "../Sources/mls-board/mls-colin-001.mp4",
+      lisa:    "../Sources/mls-board/mls-lisa-001.mp4"
+
+    };
+    var caseImages2 = {
+      stephen: "../Sources/mls-board/mls-stephen-002.PNG",
+      colin:   "../Sources/mls-board/mls-colin-002.PNG",
+      lisa:    "../Sources/mls-board/mls-lisa-002.PNG",
+      mona:    "../Sources/mls-board/mls-mona-002.PNG",
+      vishal:    "../Sources/mls-board/mls-vishal-002.PNG",
+      stephanie: "../Sources/mls-board/mls-stephanie-002.PNG",
+      coco:      "../Sources/mls-board/mls-coco-002.PNG"
+    };
+    var secondLabels = {
+      stephen: "Stephen's<br>Symptoms",
+      colin:   "Colin's<br>Symptoms",
+      lisa:    "Lisa's<br>Symptoms",
+      mona:    "Mona's<br>Symptoms",
+      vishal:    "Vishal's<br>Symptoms",
+      stephanie: "Stephanie's<br>Symptoms",
+      coco:      "Coco's<br>Symptoms"
+    };
+    var postitColors = ["postit-green", "postit-blue", "postit-purple", "postit-green", "postit-yellow", "postit-yellow", "postit-pink"];
+    var postitNotes = {
+      stephen:   "Pop Gone Wrong! 😳💥",
+      colin:     "The Not-So-Happy Meal...🤮🍔",
+      lisa:      "Poisoned Ice Cream? 🪄🍦",
+      mona:     "Ear pain after swimming?👂💦",
+      vishal:    "Sandy Scratch + Salty Water 🤕",
+      stephanie: "More Than Just a Cold 🥴",
+      coco:      "Borrowed Brush, Big Mistake 💔"
+    };
+
+    fetch("../data.json")
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var caseId = getCase();
+        var cases = data.toolkits.mls.cases;
+        var c = null;
+        var idx = 0;
+        for (var i = 0; i < cases.length; i++) {
+          if (cases[i].id === caseId) { c = cases[i]; idx = i; break; }
+        }
+        if (!c) {
+          document.getElementById("folderWrap").innerHTML = '<p style="text-align:center;padding:40px;color:#d4b896;">Case not found. <a href="mls-investigation-board.html" style="color:#f5e6c8;">Return to board</a></p>';
+          return;
+        }
+
+        document.title = c.displayTitle + " – MLS – LearnWithMD";
+        var complete = isCaseComplete("mls", c.id);
+
+        // Character theme color (from specs/design.md) drives the avatar
+        // circle and the paper's ruled/margin line tints.
+        var themeColor = characterThemes[c.id] || c.avatarColor;
+        var themeStyle =
+          '--char-color: ' + themeColor + ';' +
+          '--char-line-faint: ' + themeColor + '22;' +
+          '--char-line-strong: ' + themeColor + '66;';
+        var avatarEmoji = illustEmojis[c.id] || c.avatar;
+
+        // Symptoms
+        var sympHtml = '';
+        c.symptoms.forEach(function(s) {
+          sympHtml += '<div class="symptom-chip"><span class="symptom-dot"></span>' + s + '</div>';
+        });
+
+        // CTA
+        var ctaHtml = complete
+          ? '<a href="mls-lab.html" class="case-cta cta-solved">Review Investigation ✓</a>'
+          : '<a href="mls-lab.html" class="case-cta">Let\'s Find the Bacteria! →</a>';
+
+        var html =
+          '<div class="manila-binder" style="' + themeStyle + '">' +
+            '<div class="folder-tab"><span class="folder-tab-text">CASE FILE #' + (idx + 1) + '</span></div>' +
+            '<div class="page-spread">' +
+
+              /* ── LEFT PAGE ── */
+              '<div class="page-left">' +
+                '<div class="left-header">' +
+                  '<div class="left-avatar" style="background:' + themeColor + '">' + avatarEmoji + '</div>' +
+                  '<div class="left-header-text">' +
+                    '<h2>' + c.nickname + '\'s Story' +
+                      (caseVideos[c.id]
+                        ? ' <button class="sound-toggle" id="soundBtn" onclick="toggleSound(event)" title="Toggle sound">' +
+                            '<svg id="soundIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                              '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/>' +
+                            '</svg>' +
+                          '</button>'
+                        : '') +
+                    '</h2>' +
+                    '<p>' + c.patient.age + ' years old</p>' +
+                  '</div>' +
+                '</div>' +
+
+                '<div class="illust-polaroid">' +
+                  '<div class="pin-deco"></div>' +
+                  '<div class="tape-strip tape-tl"></div>' +
+                  '<div class="tape-strip tape-tr"></div>' +
+                  '<div class="tape-strip tape-bl"></div>' +
+                  '<div class="tape-strip tape-br"></div>' +
+                  '<div class="illust-inner" style="background:' + (caseVideos[c.id] ? '#000' : (illustBgs[c.id] || '#f5f0e8')) + '">' +
+                    (caseVideos[c.id]
+                      ? '<video id="caseVideo" class="illust-video" autoplay loop playsinline><source src="' + caseVideos[c.id] + '" type="video/mp4"></video>'
+                      : '<span class="illust-emoji">' + (illustEmojis[c.id] || '🔬') + '</span>') +
+                  '</div>' +
+                  '<span class="illust-caption">' + c.nickname + '\'s story</span>' +
+                '</div>' +
+
+                /* Second polaroid (symptoms image) */
+                '<div class="illust-secondary">' +
+                  '<div class="secondary-label">' +
+                    (secondLabels[c.id] || (c.nickname + '\'s<br>Symptoms')) +
+                    ' <span class="arrow"></span>' +
+                  '</div>' +
+                  '<div class="secondary-polaroid">' +
+                    '<div class="tape-sm tape-sm-tl"></div>' +
+                    '<div class="tape-sm tape-sm-tr"></div>' +
+                    '<div class="tape-sm tape-sm-bl"></div>' +
+                    '<div class="tape-sm tape-sm-br"></div>' +
+                    '<div class="secondary-inner">' +
+                      (caseImages2[c.id]
+                        ? '<img src="' + caseImages2[c.id] + '" alt="' + c.nickname + ' symptoms" />'
+                        : '<span class="illust-emoji">' + (illustEmojis[c.id] || '🔬') + '</span>') +
+                    '</div>' +
+                  '</div>' +
+                '</div>' +
+
+                '<div class="left-postit ' + (postitColors[idx] || 'postit-yellow') + '">' +
+                  '📌 ' + (postitNotes[c.id] || 'Investigate this case...') +
+                '</div>' +
+              '</div>' +
+
+              /* ── GUTTER ── */
+              '<div class="page-gutter">' +
+                '<div class="spring-col">' +
+                  '<img src="../Sources/notebook_spring.png" alt="">' +
+                  '<img src="../Sources/notebook_spring.png" alt="">' +
+                  '<img src="../Sources/notebook_spring.png" alt="">' +
+                  '<img src="../Sources/notebook_spring.png" alt="">' +
+                  '<img src="../Sources/notebook_spring.png" alt="">' +
+                  '<img src="../Sources/notebook_spring.png" alt="">' +
+                  '<img src="../Sources/notebook_spring.png" alt="">' +
+                  '<img src="../Sources/notebook_spring.png" alt="">' +
+                  '<img src="../Sources/notebook_spring.png" alt="">' +
+                  '<img src="../Sources/notebook_spring.png" alt="">' +
+                '</div>' +
+              '</div>' +
+
+              /* ── RIGHT PAGE ── */
+              '<div class="page-right">' +
+                '<div class="page-right-lines"></div>' +
+                '<div class="right-content">' +
+
+                  '<div class="case-number">' + (idx + 1) + '</div>' +
+                  '<div class="case-file-heading">' +
+                    '<h2 class="case-file-label">CASE FILE #' + (idx + 1) + '</h2>' +
+                    '<span class="case-file-subtitle">' + c.displayTitle + '</span>' +
+                  '</div>' +
+
+                  /* Clinical Scenario */
+                  '<div class="case-section">' +
+                    '<div class="section-header">' +
+                      '<div class="section-icon-sm blue"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>' +
+                      '<h3>Clinical Scenario</h3>' +
+                    '</div>' +
+                    '<p class="section-text">' + c.description + '</p>' +
+                  '</div>' +
+
+                  /* Symptoms & Signs */
+                  '<div class="case-section">' +
+                    '<div class="section-header">' +
+                      '<div class="section-icon-sm red"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>' +
+                      '<h3>Symptoms &amp; Signs</h3>' +
+                    '</div>' +
+                    '<div class="symptoms-list">' + sympHtml + '</div>' +
+                  '</div>' +
+
+                  ctaHtml +
+
+                '</div>' +
+                '<div class="page-curl"></div>' +
+              '</div>' +
+
+            '</div>' +
+          '</div>';
+
+        document.getElementById("folderWrap").innerHTML = html;
+      });
+  </script>
+
+</body>
+</html>

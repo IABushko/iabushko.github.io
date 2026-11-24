@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnostic Imaging – LearnWithMD</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="../state.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #ffffff;
+      color: #122A40;
+      font-family: "Inter", system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 40px;
+      font-size: 0.85rem;
+      color: #5BA9D9;
+      background: #fafafa;
+      border-bottom: 1px solid #eee;
+    }
+    .breadcrumb-bar a {
+      color: #5BA9D9;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .breadcrumb-bar a:hover { color: #122A40; }
+    .breadcrumb-bar .sep { color: #ccc; font-size: 0.75rem; }
+    .breadcrumb-bar .current { color: #122A40; font-weight: 600; }
+
+    /* ── Hero Section ── */
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 60px;
+      padding: 64px 40px;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    .hero-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #EBF4FB;
+      border: 1px solid #4E74BF;
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      color: #122A40;
+      margin-bottom: 20px;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+    .hero-title {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: #122A40;
+      margin: 0 0 12px;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+    }
+    .hero-title span { color: #4E74BF; }
+    .hero-subtitle {
+      font-size: 1.05rem;
+      color: #5BA9D9;
+      margin: 0;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    /* Hero Image */
+    .hero-image {
+      flex-shrink: 0;
+      width: 340px;
+      height: 340px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-image img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      transition: opacity 0.3s ease;
+    }
+
+    /* ── Subject Section ── */
+    .subjects-section {
+      padding: 0 40px 0;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    .subjects-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #888888;
+      margin-bottom: 24px;
+    }
+
+    /* Subject Grid */
+    .subjects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .subject-card {
+      position: relative;
+      background: #FFFFFF;
+      border: 2px solid #e8e8e8;
+      border-radius: 16px;
+      padding: 28px 16px 24px;
+      text-align: center;
+      color: #122A40;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      aspect-ratio: 1;
+      justify-content: center;
+      user-select: none;
+    }
+    .subject-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.10);
+    }
+
+    /* Selected */
+    .subject-card.selected {
+      border-color: #4E74BF;
+      background: #EBF4FB;
+      box-shadow: 0 4px 16px rgba(78,116,191,0.22);
+    }
+    .subject-card.selected:hover {
+      box-shadow: 0 12px 32px rgba(78,116,191,0.22);
+    }
+
+    /* Coming soon */
+    .subject-card.soon {
+      opacity: 0.5;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .subject-icon {
+      font-size: 2.4rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .subject-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #122A40;
+      display: block;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .subject-card.soon .subject-name { color: #aaa; }
+    .subject-badge-active {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #000000;
+      color: #FFFFFF;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    .subject-badge-soon {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #f0f0f0;
+      color: #999999;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* ── Expanded Description Panel ── */
+    .subject-detail {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 40px;
+      overflow: hidden;
+    }
+    .detail-panel {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.4s ease;
+      margin-top: 0;
+    }
+    .detail-panel.open {
+      max-height: 800px;
+      opacity: 1;
+      margin-top: 32px;
+    }
+    .detail-card {
+      background: #FAFAFA;
+      border: 1px solid #e8e8e8;
+      border-radius: 16px;
+      padding: 36px;
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+    }
+    .detail-content { flex: 1; min-width: 0; }
+    .detail-sidebar { width: 220px; flex-shrink: 0; }
+
+    /* Sidebar action button (matches mls.html) */
+    .sidebar-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      background: #ffffff;
+      color: #222;
+      border: 2px solid #222;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+    }
+    .sidebar-action-btn:hover { background: #222; color: #fff; }
+    .sidebar-action-btn svg { flex-shrink: 0; transition: stroke 0.2s; }
+    .sidebar-action-btn:hover svg { stroke: #fff; }
+
+    .detail-subject-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #EBF4FB;
+      border: 1px solid #4E74BF;
+      padding: 4px 14px;
+      border-radius: 16px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #122A40;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .detail-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #122A40;
+      margin: 0 0 8px;
+    }
+    .detail-meta {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .detail-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: #888;
+      font-weight: 500;
+    }
+    .detail-section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+    .detail-description {
+      font-size: 0.92rem;
+      color: #555;
+      line-height: 1.75;
+      margin: 0 0 20px;
+    }
+    .detail-objectives {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 24px;
+    }
+    .detail-objectives li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: #122A40;
+      padding: 6px 0;
+      line-height: 1.5;
+    }
+    .obj-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #EBF4FB;
+      border: 2px solid #4E74BF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      font-size: 0.65rem;
+      color: #4E74BF;
+      font-weight: 700;
+    }
+    .detail-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .detail-tag {
+      background: #f0f0f0;
+      color: #666;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .detail-launch {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #000000;
+      color: #ffffff;
+      padding: 14px 36px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .detail-launch:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      background: #222;
+    }
+
+    /* Download worksheet button (matches mls.html) */
+    .detail-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #ffffff;
+      color: #000000;
+      padding: 14px 36px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: 2px solid #000000;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .detail-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      background: #000;
+      color: #fff;
+    }
+
+    /* ── Quick Access (matches mls sidebar-action-btn style) ── */
+    .module-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      padding: 48px 40px 60px;
+      flex-wrap: wrap;
+    }
+    .module-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #ffffff;
+      color: #222;
+      border: 2px solid #222;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-sizing: border-box;
+    }
+    .module-pill:hover {
+      background: #222;
+      color: #fff;
+    }
+    .module-pill svg { stroke: #222; transition: stroke 0.2s; }
+    .module-pill:hover svg { stroke: #fff; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .hero {
+        flex-direction: column-reverse;
+        text-align: center;
+        gap: 32px;
+        padding: 40px 24px;
+      }
+      .hero-text { text-align: center; }
+      .hero-image { width: 240px; height: 240px; }
+      .hero-title { font-size: 2.2rem; }
+      .subjects-section { padding: 0 24px 0; }
+      .subject-detail { padding: 0 24px; }
+      .subjects-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .subject-card { aspect-ratio: auto; padding: 20px 12px; }
+      .breadcrumb-bar { padding: 14px 24px; }
+      .detail-card { flex-direction: column; padding: 24px; gap: 24px; }
+      .detail-sidebar { width: 100%; }
+      .module-row { padding: 40px 24px 48px; }
+    }
+    @media (max-width: 560px) {
+      .hero-title { font-size: 1.8rem; }
+      .hero-image { width: 180px; height: 180px; }
+      .hero { padding: 32px 16px; }
+      .subjects-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .subject-icon { font-size: 1.8rem; }
+      .subject-name { font-size: 0.78rem; }
+      .subjects-section { padding: 0 16px 0; }
+      .subject-detail { padding: 0 16px; }
+      .breadcrumb-bar { padding: 12px 16px; font-size: 0.8rem; }
+      .module-pill { padding: 10px 18px; font-size: 0.82rem; }
+      .module-row { padding: 32px 16px 48px; }
+      .detail-card { padding: 20px; }
+      .detail-title { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb-bar">
+    <a href="../index.html">Home</a>
+    <span class="sep">&#9654;</span>
+    <span class="current">Diagnostic Imaging</span>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-text">
+      <div class="hero-badge">🩻 Diagnostic Imaging</div>
+      <h1 class="hero-title">Become a <span>Photographer.</span><br>Capture Hidden Body Images</h1>
+      <p class="hero-subtitle">Use X-rays, CT scans, and MRI to see inside the human body and help physicians diagnose disease.</p>
+      <a href="../Subpages/di-career.html" class="sidebar-action-btn" style="display:inline-flex;width:auto;margin-top:20px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg>
+        Career Path
+      </a>
+    </div>
+    <div class="hero-image">
+      <img id="heroImg" src="../Sources/di-logo.png" alt="Diagnostic Imaging" />
+    </div>
+  </section>
+
+  <!-- Subject Selection -->
+  <section class="subjects-section">
+    <p class="subjects-label">Select the Modality</p>
+    <div class="subjects-grid">
+
+      <div class="subject-card" data-subject="xray" onclick="selectSubject(this)">
+        <span class="subject-icon">☢️</span>
+        <span class="subject-name">X-ray</span>
+        <span class="subject-badge-active">Available</span>
+      </div>
+
+      <div class="subject-card" data-subject="ct" onclick="selectSubject(this)">
+        <span class="subject-icon">🔄</span>
+        <span class="subject-name">CT Scan</span>
+        <span class="subject-badge-active">Available</span>
+      </div>
+
+      <div class="subject-card" data-subject="mri" onclick="selectSubject(this)">
+        <span class="subject-icon">🧲</span>
+        <span class="subject-name">MRI</span>
+        <span class="subject-badge-soon">Coming Soon</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Expanded Detail Panel -->
+  <div class="subject-detail">
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-card" id="detailCard"></div>
+    </div>
+  </div>
+
+  <script>
+    var subjects = {
+      xray: {
+        logo: "../Sources/di-logo.png",
+        icon: "☢️",
+        label: "X-ray Unit",
+        title: "X-ray: The Shadow Camera",
+        comingSoon: false,
+        duration: "25-30 min",
+        cases: "3 Challenges",
+        grade: "Grade 9",
+        about: " Welcome to the Shadow Splash Studio! In this simulation, you will throw \"black paint balls\" through blocking objects onto a canvas while adjusting quantity, speed, and distance to see how X-ray images are created. Think of X-rays as a shadow camera. Beams pass through the body, and the image forms based on what gets blocked. Air lets most beams through, bone blocks a lot, creating the contrast seen in medical images.<br><br>",
+        objectives: [
+          "Understand why different body parts look different on an X-ray ",
+          "Explore the inverse square law — how distance affects image quality",
+          "Learn how current and voltage affect X-ray image contrast",
+          "Adjust exposure settings to produce the clearest diagnostic image"
+        ],
+        tags: ["X-ray", "Shadow Studio", "Inverse Square Law"],
+        launchUrl: "../Subpages/di-xray-shadowStudio.html",
+        launchText: "Launch Shadow Studio →"
+      },
+      ct: {
+        logo: "../Sources/di-logo.png",
+        icon: "🔄",
+        label: "CT Scan Unit",
+        title: "CT: The Orbit Camera",
+        comingSoon: false,
+        duration: "25 min",
+        cases: "3 Quizzes",
+        grade: "Grade 9",
+        about: "Welcome to the Spinning Splash Studio! Using the same X-ray paint balls, you will rotate the launcher around the tree to capture multiple views and find out what is hidden in the tree. Along the way, you’ll explore CT advantages, Hounsfield units, and axial, coronal, and sagittal planes.<br><br>",
+        objectives: [
+          "Differentiate CT from X-ray",
+          "Follow the CT workflow: Data Acquisition → Image Reconstruction → Image Display and Communication",
+          "Understand Hounsfield Units (HU): how density is converted to numbers and shades",
+          "Explore axial, coronal, and sagittal slices and how they stack into a 3D model"
+        ],
+        tags: ["CT Scan", "Orbit Studio", "Hounsfield Units", "3D Reconstruction", "Slices"],
+        launchUrl: "../Subpages/di-ct-orbitStudio.html",
+        launchText: "Launch Orbit Studio →"
+      },
+      mri: {
+        logo: "../Sources/di-logo.png",
+        icon: "🧲",
+        label: "MRI Unit",
+        title: "MRI: The Neon Camera",
+        comingSoon: true,
+        duration: "25-30 min",
+        cases: "Coming Soon",
+        grade: "Grade 9",
+        about: "MRI uses powerful magnets and radio waves to create incredibly detailed images of soft tissues, the brain, spinal cord, joints, and organs. In this interactive, you will learn how hydrogen atoms in the body respond to magnetic fields, why MRI excels at imaging the brain and musculoskeletal system, and how technologists ensure patient safety around the strong magnet.<br><br>",
+        objectives: [
+          "Understand the basic physics of how MRI creates images using magnetism",
+          "Learn why MRI is preferred for brain, spine, and soft tissue imaging",
+          "Identify key anatomy on MRI images of the brain and knee",
+          "Understand MRI safety — why metal objects are dangerous near the scanner",
+          "Compare MRI with CT and X-ray for different clinical scenarios"
+        ],
+        tags: ["MRI", "Magnetic Resonance", "Brain", "Soft Tissue", "No Radiation"]
+      }
+    };
+
+    var defaultLogo = "../Sources/di-logo.png";
+    var currentSubject = null;
+
+    function selectSubject(el) {
+      var subjectId = el.getAttribute("data-subject");
+      var wasSelected = el.classList.contains("selected");
+
+      document.querySelectorAll(".subject-card").forEach(function(card) {
+        card.classList.remove("selected");
+      });
+
+      var panel = document.getElementById("detailPanel");
+      var heroImg = document.getElementById("heroImg");
+
+      if (wasSelected) {
+        currentSubject = null;
+        panel.classList.remove("open");
+      } else {
+        currentSubject = subjectId;
+        el.classList.add("selected");
+        renderDetail(subjectId);
+        panel.classList.add("open");
+      }
+    }
+
+    function renderDetail(subjectId) {
+      var s = subjects[subjectId];
+      if (!s) return;
+
+      var html = '<div class="detail-content">';
+      html += '<div class="detail-subject-tag">' + s.icon + ' ' + s.label + '</div>';
+      html += '<h2 class="detail-title">' + s.title + '</h2>';
+
+      if (s.comingSoon) {
+        html += '<div style="display:inline-block;background:#EBF4FB;border:1px solid #4E74BF;color:#122A40;padding:8px 20px;border-radius:10px;font-size:0.85rem;font-weight:700;margin-bottom:20px;">🚧 Coming Soon</div>';
+      }
+
+      html += '<div class="detail-meta">';
+      html += '<div class="detail-meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>' + s.duration + '</div>';
+      html += '<div class="detail-meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>' + s.cases + '</div>';
+      html += '<div class="detail-meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg>' + s.grade + '</div>';
+      html += '</div>';
+
+      html += '<p class="detail-section-label">About this Interactive</p>';
+      html += '<p class="detail-description">' + s.about + '</p>';
+
+      if (s.objectives.length > 0) {
+        html += '<p class="detail-section-label">Learning Objectives</p>';
+        html += '<ul class="detail-objectives">';
+        s.objectives.forEach(function(obj) {
+          html += '<li><span class="obj-check">✓</span>' + obj + '</li>';
+        });
+        html += '</ul>';
+      }
+
+      if (s.tags.length > 0) {
+        html += '<div class="detail-tags">';
+        s.tags.forEach(function(t) {
+          html += '<span class="detail-tag">' + t + '</span>';
+        });
+        html += '</div>';
+      }
+
+      // Launch button + Download Worksheet
+      if (!s.comingSoon && s.launchUrl) {
+        html += '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">';
+        html += '<a href="' + s.launchUrl + '" class="detail-launch">' + s.launchText + '</a>';
+        html += '<a href="#" onclick="downloadWorksheets(event)" class="detail-download"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Worksheet</a>';
+        html += '</div>';
+      }
+
+      html += '</div>'; // end detail-content
+
+      // Sidebar: Glossary & Basics (inside the gray detail card)
+      if (!s.comingSoon) {
+        html += '<div class="detail-sidebar">';
+        html += '<a href="../downloadable/di-basics-MDACC-SHP.pdf" download class="sidebar-action-btn">';
+        html += '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+        html += 'Glossary & Basics</a>';
+        html += '</div>';
+      }
+
+      document.getElementById("detailCard").innerHTML = html;
+    }
+
+    function downloadWorksheets(e) {
+      e.preventDefault();
+      var key = currentSubject || "xray";
+      var pptLink = document.createElement("a");
+      pptLink.href = "../downloadable/di-" + key + "-worksheet.pptx";
+      pptLink.download = "DI-" + key.toUpperCase() + "-Worksheet.pptx";
+      document.body.appendChild(pptLink);
+      pptLink.click();
+      document.body.removeChild(pptLink);
+
+      setTimeout(function() {
+        var pdfLink = document.createElement("a");
+        pdfLink.href = "../downloadable/di-" + key + "-worksheet.pdf";
+        pdfLink.download = "DI-" + key.toUpperCase() + "-Worksheet.pdf";
+        document.body.appendChild(pdfLink);
+        pdfLink.click();
+        document.body.removeChild(pdfLink);
+      }, 300);
+    }
+  </script>
+
+</body>
+</html>

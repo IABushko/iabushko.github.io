@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Medical Laboratory Science – LearnWithMD</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="../state.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #ffffff;
+      color: #512500;
+      font-family: "Inter", system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 40px;
+      font-size: 0.85rem;
+      color: #8E9DCC;
+      background: #fafafa;
+      border-bottom: 1px solid #eee;
+    }
+    .breadcrumb-bar a {
+      color: #8E9DCC;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .breadcrumb-bar a:hover { color: #512500; }
+    .breadcrumb-bar .sep { color: #ccc; font-size: 0.75rem; }
+    .breadcrumb-bar .current { color: #512500; font-weight: 600; }
+
+    /* ── Hero Section ── */
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 60px;
+      padding: 64px 40px;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    .hero-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #FFF5E6;
+      border: 1px solid #FFA737;
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      color: #512500;
+      margin-bottom: 20px;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+    .hero-title {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: #512500;
+      margin: 0 0 12px;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+    }
+    .hero-title span { color: #FFA737; }
+    .hero-subtitle {
+      font-size: 1.05rem;
+      color: #8E9DCC;
+      margin: 0;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    /* Hero Image */
+    .hero-image {
+      flex-shrink: 0;
+      width: 340px;
+      height: 340px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-image img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      transition: opacity 0.3s ease;
+    }
+
+    /* ── Subject Section ── */
+    .subjects-section {
+      padding: 0 40px 0;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    .subjects-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #888888;
+      margin-bottom: 24px;
+    }
+
+    /* Subject Grid — square cards */
+    .subjects-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    .subject-card {
+      position: relative;
+      background: #FFFFFF;
+      border: 2px solid #e8e8e8;
+      border-radius: 16px;
+      padding: 28px 16px 24px;
+      text-align: center;
+      color: #512500;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      aspect-ratio: 1;
+      justify-content: center;
+      user-select: none;
+    }
+    .subject-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.10);
+    }
+
+    /* Selected subject */
+    .subject-card.selected {
+      border-color: #FFA737;
+      background: #FFF9F0;
+      box-shadow: 0 4px 16px rgba(255,167,55,0.22);
+    }
+    .subject-card.selected:hover {
+      box-shadow: 0 12px 32px rgba(255,167,55,0.22);
+    }
+
+    .subject-icon {
+      font-size: 2.4rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .subject-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #512500;
+      display: block;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .subject-badge-active {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #000000;
+      color: #FFFFFF;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    .subject-badge-soon {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #f0f0f0;
+      color: #999999;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* ── Expanded Description Panel ── */
+    .subject-detail {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 40px;
+      overflow: hidden;
+    }
+    .detail-panel {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.4s ease;
+      margin-top: 0;
+    }
+    .detail-panel.open {
+      max-height: 800px;
+      opacity: 1;
+      margin-top: 32px;
+    }
+    .detail-card {
+      background: #FAFAFA;
+      border: 1px solid #e8e8e8;
+      border-radius: 16px;
+      padding: 36px;
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+    }
+    .detail-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .detail-sidebar {
+      width: 220px;
+      flex-shrink: 0;
+    }
+
+    /* Detail header */
+    .detail-subject-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #FFF5E6;
+      border: 1px solid #FFA737;
+      padding: 4px 14px;
+      border-radius: 16px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #512500;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .detail-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #512500;
+      margin: 0 0 8px;
+    }
+    .detail-meta {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .detail-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: #888;
+      font-weight: 500;
+    }
+    .detail-meta-item svg { flex-shrink: 0; }
+
+    /* About section */
+    .detail-section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+    .detail-description {
+      font-size: 0.92rem;
+      color: #555;
+      line-height: 1.75;
+      margin: 0 0 20px;
+    }
+
+    /* Learning objectives */
+    .detail-objectives {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 24px;
+    }
+    .detail-objectives li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: #512500;
+      padding: 6px 0;
+      line-height: 1.5;
+    }
+    .obj-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #FFF5E6;
+      border: 2px solid #FFA737;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      font-size: 0.65rem;
+      color: #FFA737;
+      font-weight: 700;
+    }
+
+    /* Tags */
+    .detail-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .detail-tag {
+      background: #f0f0f0;
+      color: #666;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Launch button */
+    .detail-launch {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #000000;
+      color: #ffffff;
+      padding: 14px 36px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .detail-launch:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      background: #222;
+    }
+
+    /* Sidebar info card */
+    .sidebar-card {
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .sidebar-card-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: #512500;
+      padding: 5px 0;
+    }
+    .sidebar-item-icon {
+      font-size: 1rem;
+    }
+    .sidebar-progress {
+      margin-top: 12px;
+    }
+    .sidebar-progress-label {
+      font-size: 0.75rem;
+      color: #888;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .sidebar-progress-track {
+      height: 8px;
+      background: #eee;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .sidebar-progress-fill {
+      height: 100%;
+      background: #FFA737;
+      border-radius: 8px;
+      transition: width 0.5s;
+    }
+    .sidebar-progress-reset {
+      margin-top: 10px;
+      background: transparent;
+      border: 1px solid #ccc;
+      color: #666;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sidebar-progress-reset:hover {
+      background: #222;
+      color: #fff;
+      border-color: #222;
+    }
+
+    /* Sidebar action buttons (black & white) */
+    .sidebar-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      background: #ffffff;
+      color: #222;
+      border: 2px solid #222;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+    }
+    .sidebar-action-btn:hover {
+      background: #222;
+      color: #fff;
+    }
+    .sidebar-action-btn svg {
+      flex-shrink: 0;
+    }
+    .sidebar-action-btn:hover svg {
+      stroke: #fff;
+    }
+
+    /* Download worksheet button */
+    .detail-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #ffffff;
+      color: #000000;
+      padding: 14px 36px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: 2px solid #000000;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      margin-left: 12px;
+    }
+    .detail-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      background: #000;
+      color: #fff;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .hero {
+        flex-direction: column-reverse;
+        text-align: center;
+        gap: 32px;
+        padding: 40px 24px;
+      }
+      .hero-text { text-align: center; }
+      .hero-image { width: 240px; height: 240px; }
+      .hero-title { font-size: 2.2rem; }
+      .subjects-section { padding: 0 24px 0; }
+      .subject-detail { padding: 0 24px; }
+      .subjects-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .subject-card { aspect-ratio: auto; padding: 20px 12px; }
+      .breadcrumb-bar { padding: 14px 24px; }
+      .detail-card {
+        flex-direction: column;
+        padding: 24px;
+        gap: 24px;
+      }
+      .detail-sidebar { width: 100%; }
+    }
+    @media (max-width: 560px) {
+      .hero-title { font-size: 1.8rem; }
+      .hero-image { width: 180px; height: 180px; }
+      .hero { padding: 32px 16px; }
+      .subjects-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .subject-icon { font-size: 1.8rem; }
+      .subject-name { font-size: 0.78rem; }
+      .subjects-section { padding: 0 16px 0; }
+      .subject-detail { padding: 0 16px; }
+      .breadcrumb-bar { padding: 12px 16px; font-size: 0.8rem; }
+      .detail-card { padding: 20px; }
+      .detail-title { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb-bar">
+    <a href="../index.html">Home</a>
+    <span class="sep">&#9654;</span>
+    <span class="current">Medical Laboratory Science</span>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-text">
+      <div class="hero-badge">🔬 Medical Laboratory Science</div>
+      <h1 class="hero-title">Become a <span>Detective.</span><br>Solve Medical Mysteries</h1>
+      <p class="hero-subtitle">Gather clues from your patient, run real biochemical tests, and identify the bacteria behind each patient's illness.</p>
+      <a href="../Subpages/mls-career.html" class="sidebar-action-btn" style="display:inline-flex;width:auto;margin-top:20px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg>
+        Career Path
+      </a>
+    </div>
+    <div class="hero-image">
+      <img id="heroImg" src="../Sources/mls-logo.png" alt="Medical Laboratory Science" />
+    </div>
+  </section>
+
+  <!-- Subject Selection -->
+  <section class="subjects-section">
+    <p class="subjects-label">Select the Subject</p>
+    <div class="subjects-grid">
+
+      <!-- Microbiology -->
+      <div class="subject-card" data-subject="microbiology" onclick="selectSubject(this)">
+        <span class="subject-icon">🦠</span>
+        <span class="subject-name">Microbiology</span>
+        <span class="subject-badge-active">Available</span>
+      </div>
+
+      <!-- Hematology -->
+      <div class="subject-card" data-subject="hematology" onclick="selectSubject(this)">
+        <span class="subject-icon">🩸</span>
+        <span class="subject-name">Hematology</span>
+        <span class="subject-badge-soon">Coming Soon</span>
+      </div>
+
+
+      <!-- Blood Banking -->
+      <div class="subject-card" data-subject="bloodbanking" onclick="selectSubject(this)">
+        <span class="subject-icon">💉</span>
+        <span class="subject-name">Blood Banking</span>
+        <span class="subject-badge-soon">Coming Soon</span>
+      </div>
+
+      <!-- Clinical Chemistry -->
+      <div class="subject-card" data-subject="clinicalchemistry" onclick="selectSubject(this)">
+        <span class="subject-icon">🔬</span>
+        <span class="subject-name">Clinical Chemistry</span>
+        <span class="subject-badge-soon">Coming Soon</span>
+      </div>
+
+
+    </div>
+  </section>
+
+  <!-- Expanded Detail Panel (populated by JS) -->
+  <div class="subject-detail">
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-card" id="detailCard"></div>
+    </div>
+  </div>
+
+  <!-- Spacer -->
+  <div style="height: 60px;"></div>
+
+  <script>
+    // ── Subject definitions ──
+    // Logo naming convention: mls-logo-{subjectId}.png
+    var subjects = {
+      microbiology: {
+        logo: "../Sources/mls-logo-microbiology.png",
+        icon: "🦠",
+        label: "Microbiology Unit",
+        title: "Lab Detective Solving Microbial Mysteries",
+        comingSoon: false,
+        duration: "45–60 min",
+        cases: "7 Case Studies",
+        grade: "Grades 7–9",
+        about: "In this interactive toolkit, you will solve real medical mysteries. Each case begins with a patient who needs your help. You will:<br>\uD83D\uDD0E Search for clues by examining cultures and lab images<br>\uD83E\uDDEB Run tests and reveal hidden results<br>\uD83E\uDDE0 Think like a detective to narrow down your suspects. <br><br>Once you\u2019ve gathered enough evidence, head to your Investigation Board. Starting from the patient\u2019s symptoms, connect the correct lab results you\u2019ve collected and identify the bacterial culprit. <strong>Get all the connections right, case closed!</strong><br><br>",
+        objectives: [
+          "Learn how to classify bacteria based on shape, color, and Gram stain results",
+          "Interpret biochemical test results to narrow down bacterial identity",
+          "Connect patient symptoms with pathogens and predict infection sources",
+          "Follow the diagnostic workflow used in real clinical microbiology laboratories",
+          "Differentiate normal flora from disease-causing microorganisms"
+        ],
+        tags: ["Microbiology", "Gram Stain", "Bacteria", "Culture", "Biochemical Tests"],
+        launchUrl: "../Subpages/mls-investigation-board.html?launch=1",
+        launchText: "Launch Investigation Board →",
+        activities: [
+          { icon: "📖", name: "Glossary & Basics" },
+          { icon: "🔍", name: "Investigation Board" },
+          { icon: "🔬", name: "Virtual Lab Notebook" },
+          { icon: "🎓", name: "Career Exploration" }
+        ]
+      },
+      hematology: {
+        logo: "../Sources/mls-logo-hematology.png",
+        icon: "🩸",
+        label: "Hematology & Hemostasis Unit",
+        title: "Hematology & Hemostasis: Reading the Blood",
+        comingSoon: true
+      },
+      bloodbanking: {
+        logo: "../Sources/mls-logo-bloodbanking.png",
+        icon: "💉",
+        label: "Blood Banking Unit",
+        title: "Blood Banking: The Right Blood, Right Time",
+        comingSoon: true
+      },
+
+      clinicalchemistry: {
+        logo: "../Sources/mls-logo-clinicalchemistry.png",
+        icon: "🔬",
+        label: "Clinical Chemistry Unit",
+        title: "Clinical Chemistry: Decoding the Body's Signals",
+        comingSoon: true
+      },
+    };
+
+    var defaultLogo = "../Sources/mls-logo.png";
+    var currentSubject = null;
+
+    function selectSubject(el) {
+      var subjectId = el.getAttribute("data-subject");
+      var wasSelected = el.classList.contains("selected");
+
+      // Deselect all
+      document.querySelectorAll(".subject-card").forEach(function(card) {
+        card.classList.remove("selected");
+      });
+
+      var panel = document.getElementById("detailPanel");
+      var heroImg = document.getElementById("heroImg");
+
+      if (wasSelected) {
+        // Toggle off
+        currentSubject = null;
+        panel.classList.remove("open");
+        heroImg.style.opacity = "0";
+        setTimeout(function() {
+          heroImg.src = defaultLogo;
+          heroImg.style.opacity = "1";
+        }, 200);
+      } else {
+        // Select
+        currentSubject = subjectId;
+        el.classList.add("selected");
+
+        // Swap hero logo
+        var sub = subjects[subjectId];
+        if (sub && sub.logo) {
+          heroImg.style.opacity = "0";
+          setTimeout(function() {
+            heroImg.src = sub.logo;
+            heroImg.style.opacity = "1";
+          }, 200);
+        }
+
+        // Populate detail panel
+        renderDetail(subjectId);
+        panel.classList.add("open");
+      }
+    }
+
+    function renderDetail(subjectId) {
+      var s = subjects[subjectId];
+      if (!s) return;
+
+      var html = '<div class="detail-content">';
+
+      // Tag + Title
+      html += '<div class="detail-subject-tag">' + s.icon + ' ' + s.label + '</div>';
+      html += '<h2 class="detail-title">' + s.title + '</h2>';
+
+      // Coming soon banner
+      if (s.comingSoon) {
+        html += '<div style="display:inline-block;background:#FFF5E6;border:1px solid #FFA737;color:#512500;padding:8px 20px;border-radius:10px;font-size:0.85rem;font-weight:700;margin-bottom:20px;">🚧 Coming Soon</div>';
+      }
+
+      // Meta
+      html += '<div class="detail-meta">';
+      html += '<div class="detail-meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>' + s.duration + '</div>';
+      html += '<div class="detail-meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>' + s.cases + '</div>';
+      html += '<div class="detail-meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg>' + s.grade + '</div>';
+      html += '</div>';
+
+      // About
+      html += '<p class="detail-section-label">About this Interactive</p>';
+      html += '<p class="detail-description">' + s.about + '</p>';
+
+      // Objectives
+      if (s.objectives.length > 0) {
+        html += '<p class="detail-section-label">Learning Objectives</p>';
+        html += '<ul class="detail-objectives">';
+        s.objectives.forEach(function(obj) {
+          html += '<li><span class="obj-check">✓</span>' + obj + '</li>';
+        });
+        html += '</ul>';
+      }
+
+      // Tags
+      if (s.tags.length > 0) {
+        html += '<div class="detail-tags">';
+        s.tags.forEach(function(t) {
+          html += '<span class="detail-tag">' + t + '</span>';
+        });
+        html += '</div>';
+      }
+
+      // Launch button + Download Worksheet (only if not coming soon)
+      if (!s.comingSoon && s.launchUrl) {
+        html += '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">';
+        html += '<a href="' + s.launchUrl + '" class="detail-launch">' + s.launchText + '</a>';
+        html += '<a href="#" onclick="downloadWorksheets(event)" class="detail-download"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Worksheet</a>';
+        html += '</div>';
+      }
+
+      html += '</div>'; // end detail-content
+
+      // Sidebar (only for non-coming-soon with activities)
+      if (s.activities.length > 0 || !s.comingSoon) {
+        html += '<div class="detail-sidebar">';
+
+        if (s.activities.length > 0) {
+          html += '<div class="sidebar-card"><p class="sidebar-card-label">Included Activities</p>';
+          s.activities.forEach(function(a) {
+            html += '<div class="sidebar-item"><span class="sidebar-item-icon">' + a.icon + '</span>' + a.name + '</div>';
+          });
+          html += '</div>';
+        }
+
+        // Progress (only for microbiology for now)
+        if (subjectId === "microbiology") {
+          var caseIds = ["stephen", "colin", "lisa", "mona", "vishal", "stephanie", "coco"];
+          var done = getCompletedCount("mls", caseIds);
+          var pct = getProgressPercent("mls", caseIds);
+          html += '<div class="sidebar-card"><p class="sidebar-card-label">Your Progress</p>';
+          html += '<div class="sidebar-progress">';
+          html += '<p class="sidebar-progress-label">' + done + ' / ' + caseIds.length + ' Cases Solved</p>';
+          html += '<div class="sidebar-progress-track"><div class="sidebar-progress-fill" style="width:' + pct + '%"></div></div>';
+          html += '<button type="button" class="sidebar-progress-reset" onclick="resetMlsProgress()">Reset Progress</button>';
+          html += '</div></div>';
+
+          // Glossary & Basics button
+          html += '<a href="../downloadable/mls-basics-MDACC-SHP.pdf" download class="sidebar-action-btn">';
+          html += '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+          html += 'Glossary & Basics</a>';
+        }
+
+        html += '</div>'; // end detail-sidebar
+      }
+
+      document.getElementById("detailCard").innerHTML = html;
+    }
+
+    function resetMlsProgress() {
+      if (!confirm("Reset all solved cases? This cannot be undone.")) return;
+      resetProgress("mls");
+      renderDetail("microbiology");
+    }
+
+    function downloadWorksheets(e) {
+      e.preventDefault();
+      var zipLink = document.createElement("a");
+      zipLink.href = "../downloadable/mls-worksheet-MDACC-SHP.zip";
+      zipLink.download = "mls-worksheet-MDACC-SHP.zip";
+      document.body.appendChild(zipLink);
+      zipLink.click();
+      document.body.removeChild(zipLink);
+    }
+  </script>
+
+</body>
+</html>

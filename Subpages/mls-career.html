@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Path – MLS – LearnWithMD</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="../state.js"></script>
+</head>
+<body>
+
+  <nav class="breadcrumb">
+    <a href="../index.html">Home</a> <span class="bc-sep">›</span>
+    <a href="../Toolkits/mls.html">MLS</a> <span class="bc-sep">›</span>
+    <span class="bc-current">Career Path</span>
+  </nav>
+
+  <header class="page-header">
+    <h1>🎓 MLS Career Path</h1>
+    <p>Discover what medical laboratory scientists do and how to become one.</p>
+  </header>
+
+  <section class="career-section" id="rolesSection">
+    <h2>What MLS Professionals Do</h2>
+        <p>Medical Laboratory Scientists are detectives and problem solvers who use their knowledge and technical skills to conduct a wide variety of medical laboratory tests and then correlate the results with disease processes. They are experts in monitoring quality-control programs and also possess the technical skills to operate and maintain laboratory instruments.</p>
+
+    <div class="role-cards" id="roleCards"></div>
+  </section>
+
+  <section class="career-section" id="detectiveSection">
+    <h2>Are You a Lab Detective?</h2>
+    <div style="background:#FFF8EE;border:2px solid #FFA737;border-radius:16px;padding:28px;">
+      <p style="font-size:0.98rem;color:#512500;line-height:1.75;margin:0 0 16px;">This career could be a great match for you if you:</p>
+      <ul style="list-style:none;padding:0;margin:0 0 18px;font-size:0.95rem;color:#555;line-height:1.9;">
+        <li>🧪 Enjoy science and discovering how things work</li>
+        <li>🧩 Like solving puzzles and figuring out clues</li>
+        <li>🧠 Have fun thinking through problems step by step</li>
+        <li>❤️ Want to help people, even if you’re working behind the scenes</li>
+      </ul>
+      <p style="font-size:0.92rem;color:#555;line-height:1.75;margin:0;">Medical lab professionals are like “science detectives” who help doctors find answers. Even though they don’t always work directly with patients, their work is very important for saving lives.</p>
+    </div>
+  </section>
+
+  <section class="career-section" id="eduSection">
+    <h2>Educational Pathway</h2>
+    <div class="edu-timeline" id="eduTimeline"></div>
+  </section>
+
+  <section class="career-section">
+    <h2>MD Anderson MLS Program</h2>
+    <div style="background:#FFF8EE;border:2px solid #FFA737;border-radius:16px;padding:32px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <span style="font-size:1.6rem;">🏫</span>
+        <h3 style="margin:0;font-size:1.15rem;color:#512500;">School of Health Professions – Medical Laboratory Science</h3>
+      </div>
+      <p style="font-size:0.92rem;color:#555;line-height:1.75;margin:0 0 16px;">
+        The University of Texas MD Anderson Cancer Center School of Health Professions offers a <strong>Bachelor of Science in Medical Laboratory Science</strong> — a two-year, upper-division program that combines rigorous classroom instruction with hands-on clinical rotations at leading laboratories across the Texas Medical Center.
+      </p>
+      <p style="font-size:0.92rem;color:#555;line-height:1.75;margin:0 0 16px;">
+        Students gain expertise across all major laboratory disciplines including blood banking, bone marrow, clinical chemistry, flow cytometry, hematology &amp; hemostasis, microbiology, and stem cell transplantation. The curriculum emphasizes critical thinking, quality control, and the correlation of laboratory results with disease processes.
+      </p>
+      <p style="font-size:0.92rem;color:#555;line-height:1.75;margin:0 0 20px;">
+        Graduates are eligible to sit for the <strong>Board of Certification (BOC)</strong> exam through the American Society for Clinical Pathology (ASCP) and are prepared for rewarding careers in hospitals, reference labs, research institutions, and more.
+      </p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a href="https://www.mdanderson.org/education-training/degree-granting-schools/school-of-health-professions/academics/medical-laboratory-science.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#000;color:#fff;padding:12px 28px;border-radius:10px;font-size:0.9rem;font-weight:700;text-decoration:none;transition:background 0.2s;">
+          Visit Program Page →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="career-section" id="salarySection">
+    <h2>Salary & Outlook</h2>
+    <div class="salary-bars" id="salaryBars"></div>
+    <p class="outlook-text" id="outlookText"></p>
+  </section>
+
+  <div class="career-footer" style="display:flex;justify-content:center;padding:24px 0;">
+    <a href="../Toolkits/mls.html" style="display:inline-flex;align-items:center;gap:8px;background:#fff;color:#000;border:2px solid #000;padding:12px 28px;border-radius:10px;font-size:0.9rem;font-weight:700;text-decoration:none;transition:background 0.2s;">← Return to MLS Hub</a>
+  </div>
+
+  <script>
+    fetch("../data.json")
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var career = data.toolkits.mls.career;
+
+        // Roles
+        var rc = document.getElementById("roleCards");
+        career.roles.forEach(function (role) {
+          rc.innerHTML += '<div class="role-card"><h3>' + role.title + '</h3><p>' + role.description + '</p></div>';
+        });
+
+        // Education timeline
+        var tl = document.getElementById("eduTimeline");
+        career.education.forEach(function (stage, i) {
+          tl.innerHTML += '<div class="edu-step">' +
+            '<div class="edu-dot"><span>' + (i + 1) + '</span></div>' +
+            '<div class="edu-body"><h3>' + stage.stage + ' <small>(' + stage.years + ')</small></h3>' +
+            '<p>' + stage.description + '</p></div></div>';
+        });
+
+        // Salary bars
+        var sb = document.getElementById("salaryBars");
+        var sal = career.salary;
+        var maxSal = sal.management.amount;
+        var levels = [sal.entry, sal.mid, sal.senior, sal.management];
+        levels.forEach(function (lvl) {
+          var pct = Math.round((lvl.amount / maxSal) * 100);
+          sb.innerHTML += '<div class="salary-row">' +
+            '<span class="salary-label">' + lvl.label + '</span>' +
+            '<div class="salary-track"><div class="salary-fill" style="width:' + pct + '%"></div></div>' +
+            '<span class="salary-amt">$' + lvl.amount.toLocaleString() + '</span></div>';
+        });
+
+        document.getElementById("outlookText").textContent = career.outlook;
+      });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spin-and-Slice Sculpture Lab – CT – LearnWithMD</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="../state.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #ffffff;
+      color: #122A40;
+      font-family: "Inter", system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 32px; font-size: 0.82rem; color: #5BA9D9;
+      background: #fafafa; border-bottom: 1px solid #eee;
+    }
+    .breadcrumb-bar a { color: #5BA9D9; text-decoration: none; }
+    .breadcrumb-bar a:hover { color: #122A40; }
+    .breadcrumb-bar .sep { color: #ccc; font-size: 0.7rem; }
+    .breadcrumb-bar .current { color: #122A40; font-weight: 600; }
+
+    /* ── Hero ── */
+    .studio-hero {
+      background: linear-gradient(135deg, #122A40 0%, #1a3a5c 50%, #122A40 100%);
+      color: #fff; padding: 40px 40px 32px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .studio-hero::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 40%, rgba(91,169,217,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(78,116,191,0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .studio-hero h1 { font-size: 2rem; font-weight: 800; margin: 0 0 8px; position: relative; }
+    .studio-hero h1 span { color: #5BA9D9; }
+    .studio-hero p { font-size: 1rem; color: #8bb8d9; margin: 0; position: relative; }
+    .hero-badge {
+      display: inline-block; background: rgba(91,169,217,0.2); border: 1px solid rgba(91,169,217,0.4);
+      padding: 4px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+      color: #5BA9D9; margin-bottom: 14px; position: relative;
+    }
+
+    /* ── Objectives Bar ── */
+    .objectives-bar {
+      display: flex; gap: 20px; justify-content: center; padding: 18px 24px;
+      background: #f7fafc; border-bottom: 1px solid #eee; flex-wrap: wrap;
+    }
+    .obj-item { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: #555; }
+    .obj-num {
+      width: 22px; height: 22px; border-radius: 50%; background: #4E74BF; color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 0.65rem;
+      font-weight: 700; flex-shrink: 0;
+    }
+
+
+    /* ── Studio Layout ── */
+    .studio-wrap { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
+
+    /* Main grid */
+    .studio-grid {
+      display: grid; grid-template-columns: 300px 1fr; gap: 28px; align-items: start;
+    }
+
+    /* ── Left: Controls ── */
+    .controls-panel {
+      background: #f7fafc; border: 1px solid #e8ecf1; border-radius: 16px; padding: 24px;
+    }
+    .panel-title {
+      font-size: 0.95rem; font-weight: 700; color: #122A40; margin: 0 0 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Phase indicator pills */
+    .phase-pills {
+      display: flex; gap: 4px; margin-bottom: 20px; background: #e8ecf1; border-radius: 10px; padding: 3px;
+    }
+    .phase-pill {
+      flex: 1; padding: 8px 10px; border: none; border-radius: 8px;
+      font-size: 0.75rem; font-weight: 600; background: transparent; color: #999;
+      transition: all 0.2s; font-family: "Inter", system-ui, sans-serif;
+      text-align: center; cursor: default;
+    }
+    .phase-pill.active { background: #fff; color: #4E74BF; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    .phase-pill.completed { color: #3a8f5c; }
+    .phase-pill.completed::after { content: " \2713"; }
+
+    /* Slider */
+    .slider-group { margin-bottom: 20px; }
+    .slider-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+    .slider-name { font-size: 0.82rem; font-weight: 600; color: #122A40; }
+    .slider-value {
+      font-size: 0.78rem; font-weight: 700; color: #4E74BF;
+      background: #EBF4FB; padding: 2px 10px; border-radius: 8px;
+    }
+    .slider-desc { font-size: 0.7rem; color: #888; margin-bottom: 6px; font-style: italic; }
+    input[type="range"] {
+      -webkit-appearance: none; width: 100%; height: 8px; background: #dde5ed;
+      border-radius: 8px; outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+      background: #4E74BF; cursor: pointer; box-shadow: 0 2px 6px rgba(78,116,191,0.3);
+    }
+
+    /* HU Legend */
+    .hu-legend {
+      background: #fff; border: 1px solid #e8ecf1; border-radius: 10px; padding: 14px; margin-bottom: 20px;
+    }
+    .hu-title { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .hu-desc { font-size: 0.68rem; font-weight: 500; color: #aaa; margin-bottom: 8px; display: flex; align-items: center;}   
+    .hu-help-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 1.5px solid #aaa; background: transparent; color: #aaa;
+      font-size: 0.6rem; font-weight: 700; font-family: inherit;
+      cursor: pointer; padding: 0; line-height: 1;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .hu-help-btn:hover { border-color: #4E74BF; color: #4E74BF; }
+    .hu-popup-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(18, 42, 64, 0.55); align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .hu-popup-overlay.visible { display: flex; }
+    .hu-popup {
+      background: #fff; border-radius: 14px; max-width: 460px; width: 100%;
+      padding: 24px 26px; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      position: relative; font-family: inherit; color: #122A40;
+    }
+    .hu-popup h4 {
+      margin: 0 0 12px 0; font-size: 0.95rem; font-weight: 700;
+      color: #122A40; letter-spacing: 0.02em;
+    }
+    .hu-popup p {
+      margin: 0; font-size: 0.88rem; line-height: 1.55; color: #3a4a5c;
+    }
+    .hu-popup-close {
+      position: absolute; top: 10px; right: 12px;
+      width: 28px; height: 28px; border-radius: 50%; border: none;
+      background: transparent; color: #888; font-size: 1.1rem; cursor: pointer;
+      line-height: 1;
+    }
+    .hu-popup-close:hover { background: #f0f0f0; color: #122A40; }
+    .hu-bar {
+      height: 14px; border-radius: 7px; margin-bottom: 6px;
+      background: linear-gradient(90deg, #000 0%, #555 30%, #999 50%, #ccc 70%, #fff 100%);
+      border: 1px solid #e8e8e8;
+    }
+    .hu-labels { display: flex; justify-content: space-between; font-size: 0.62rem; color: #888; font-weight: 600; }
+
+    /* Fire button */
+    .fire-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 16px; border: none; border-radius: 12px;
+      background: #000; color: #fff; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s, transform 0.2s;
+      font-family: "Inter", system-ui, sans-serif;
+    }
+    .fire-btn:hover { background: #222; transform: translateY(-2px); }
+    .fire-btn:active { transform: translateY(0); }
+    .fire-btn.scanning { background: #4E74BF; pointer-events: none; }
+    .fire-btn.phase-transition { background: #3a8f5c; }
+    .fire-btn.phase-transition:hover { background: #2d7a4a; }
+
+    /* Slider controls hidden in phase 1 */
+    .controls-panel.phase1 .ct-sliders { display: none; }
+
+    /* ── Right: Viewport ── */
+    .canvas-panel { display: flex; flex-direction: column; gap: 20px; }
+
+    /* 3D viewport — taller than wide so the launcher can park at the bottom
+       with plenty of clearance from the status label below it. */
+    .viewport {
+      position: relative; background: #0d1b2a; border-radius: 16px;
+      height: 500px; overflow: hidden; border: 2px solid #1a3a5c;
+    }
+    .vp-label {
+      position: absolute; top: 12px; left: 14px; font-size: 0.62rem;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.25);
+    }
+    .vp-mode-label {
+      position: absolute; top: 12px; right: 14px; font-size: 0.65rem;
+      font-weight: 700; color: #5BA9D9; background: rgba(91,169,217,0.15);
+      padding: 3px 12px; border-radius: 8px;
+    }
+
+    /* Tree canvas in the top viewport. Square + circle-clipped so it sits
+       inside the orbit ring like a proper CT acquisition target. */
+    .tree-canvas {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 320px; height: 320px;
+      image-rendering: pixelated;
+      border-radius: 50%;
+      background: #000;
+      z-index: 1;
+    }
+    .tree-status-label {
+      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+      font-size: 0.65rem; color: rgba(255,255,255,0.45);
+      text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
+    }
+
+    /* Orbit ring — the wrapper is always rendered (it carries the launcher and
+       defines the orbit radius), but the dashed track is invisible until Phase 2.
+       That way the launcher can sit at the bottom from page load to indicate
+       where the X-ray is shot from, with no track visible yet. */
+    .orbit-ring {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 360px; height: 360px;
+      border: 1px dashed transparent;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 2;                /* above tree-canvas so launcher nose isn't occluded */
+    }
+    .orbit-ring.show-track {
+      border-color: rgba(91,169,217,0.25);
+    }
+    /* CT source — same shape as the X-ray module's tv-launcher (rectangular box
+       + triangular nose + "Launcher" label). The nose is rotated in JS to
+       always point toward the center of the orbit ring. */
+    .orbit-launcher {
+      position: absolute; width: 92px; height: 32px;
+      background: linear-gradient(180deg, #5BA9D9 0%, #4E74BF 100%);
+      border: 2.4px solid #ffffff;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #fff;
+      text-align: center;
+      line-height: 30px;          /* matches inner height (32 − 2·border) for vertical centering */
+      letter-spacing: 0.06em;
+      padding: 0 8px;             /* horizontal breathing room so "Launcher" doesn't crowd the edges */
+      box-sizing: border-box;
+      transform-origin: 50% 50%;
+      z-index: 3;                 /* above orbit-ring + tree-canvas */
+      /* Initial resting pose: 6 o'clock (bottom), nose pointing up toward the
+         tree — visually indicates the X-ray is shot from the front. The
+         animation overwrites left/top/transform on every frame during CT. */
+      left: 50%; top: 100%;
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    .orbit-launcher::before {
+      content: "";
+      position: absolute;
+      top: -10px; left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-bottom: 10px solid #fff;
+    }
+
+    /* Problem card */
+    .problem-card {
+      background: #FFF8E7; border: 1px solid #F0D56C; border-radius: 12px;
+      padding: 16px 18px; margin-top: 0;
+    }
+    .problem-card h4 {
+      margin: 0 0 6px; font-size: 0.88rem; color: #8B6914; font-weight: 700;
+    }
+    .problem-card p {
+      margin: 0; font-size: 0.82rem; color: #6B5210; line-height: 1.6;
+    }
+
+    /* ── Left column stack (controls + X-ray view) ── */
+    .left-stack { display: flex; flex-direction: column; gap: 18px; }
+
+    /* X-ray view panel (under the controls panel in the left column) */
+    .xray-view-panel {
+      background: #fff; border: 1px solid #e8ecf1; border-radius: 14px; padding: 18px;
+    }
+    .xray-view-panel h3 {
+      font-size: 0.78rem; font-weight: 700; margin: 0 0 12px; color: #122A40;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .xray-ref-canvas {
+      display: block; margin: 0 auto;
+      background: #000; border-radius: 8px;
+      width: 230px; height: 230px;
+      image-rendering: pixelated;
+    }
+    .xray-ref-caption {
+      text-align: center; font-size: 0.7rem; color: #888;
+      margin-top: 8px; line-height: 1.4;
+    }
+    .xray-ref-legend { margin-top: 12px; font-size: 0.68rem; color: #666; }
+    .xray-ref-legend .row {
+      display: flex; align-items: center; justify-content: space-between; padding: 2px 0;
+    }
+    .xray-ref-legend .swatch { width: 14px; height: 10px; border-radius: 3px; border: 1px solid #ddd; }
+
+    /* ── Slice section: full-width slice viewer ── */
+    .slice-section {
+      background: #f7fafc; border: 1px solid #e8ecf1; border-radius: 16px; padding: 22px;
+    }
+    .slice-section-title {
+      font-size: 0.86rem; font-weight: 700; margin: 0 0 14px; color: #122A40;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    /* Slice viewer plane tabs */
+    .plane-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .plane-tab {
+      flex: 1; padding: 10px 10px; border: 2px solid #e8ecf1; border-radius: 10px;
+      background: #fff; font-size: 0.82rem; font-weight: 600; color: #5b7a99;
+      cursor: pointer; transition: all 0.15s; font-family: inherit;
+    }
+    .plane-tab:hover:not(.locked) { border-color: #4E74BF; }
+    .plane-tab.active { border-color: #4E74BF; background: #EBF4FB; color: #4E74BF; }
+    .plane-tab.locked {
+      background: #f3f5f8; color: #b3bcc7; border-color: #eef0f3;
+      cursor: not-allowed;
+    }
+    .plane-tab.locked::before { content: "\1F512  "; opacity: 0.55; }
+
+    .slice-canvas {
+      display: block; margin: 0 auto;
+      background: #000; border-radius: 10px;
+      width: 460px; max-width: 100%; aspect-ratio: 1;
+      image-rendering: pixelated;
+      border: 1px solid #1a3a5c;
+    }
+    .slice-orient {
+      display: flex; justify-content: space-between; max-width: 460px; margin: 6px auto 0;
+      font-size: 0.66rem; color: #888; font-weight: 700; letter-spacing: 0.06em;
+    }
+
+    .slice-controls { margin-top: 14px; }
+    .ctrl-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+    .ctrl-label .name { font-size: 0.78rem; font-weight: 600; color: #122A40; }
+    .ctrl-label .val {
+      color: #4E74BF; font-weight: 700; background: #EBF4FB;
+      padding: 2px 10px; border-radius: 7px; font-size: 0.72rem;
+    }
+    .ctrl-desc { font-size: 0.68rem; color: #888; font-style: italic; margin-bottom: 5px; }
+
+    /* MPR gate */
+    .mpr-row {
+      display: flex; align-items: center; gap: 12px; margin-top: 14px;
+      padding: 12px 14px; background: #FFF8E7; border: 1px solid #F0D56C; border-radius: 10px;
+    }
+    .mpr-row.done { background: #E7F4EA; border-color: #9ECCA9; }
+    .mpr-msg { flex: 1; font-size: 0.76rem; color: #6B5210; line-height: 1.4; }
+    .mpr-row.done .mpr-msg { color: #2D5A3A; }
+    .mpr-btn {
+      padding: 8px 16px; border: none; border-radius: 8px;
+      background: #3a8f5c; color: #fff; font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .mpr-btn:hover { background: #2d7a4a; }
+    .mpr-btn:disabled { background: #9aa9b3; cursor: default; }
+
+    .slice-info {
+      margin-top: 14px; padding: 12px 14px; background: #f7fafc; border-radius: 10px;
+      font-size: 0.76rem; color: #555;
+    }
+    .slice-info b { color: #122A40; }
+    .visible-list { margin-top: 6px; }
+    .visible-list span {
+      display: inline-block; padding: 2px 9px; margin: 2px; border-radius: 6px;
+      background: #4E74BF; color: #fff; font-size: 0.68rem; font-weight: 600;
+    }
+    .visible-list span.no { background: #e3e8ee; color: #aaa; }
+
+    /* ── Depth-order quiz (final stage) ── */
+    .quiz-card {
+      margin-top: 20px; padding: 20px 22px;
+      background: #fff; border: 1px solid #e8ecf1; border-radius: 14px;
+    }
+    .quiz-card h3 {
+      margin: 0 0 6px; font-size: 0.92rem; color: #122A40; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .quiz-question {
+      padding-top: 18px; margin-top: 18px;
+      border-top: 1px solid #e8ecf1;
+    }
+    .quiz-question:first-of-type {
+      border-top: none; padding-top: 6px; margin-top: 4px;
+    }
+    .quiz-question h4 {
+      margin: 0 0 8px; font-size: 0.86rem; color: #122A40; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .qbadge {
+      display: inline-block; background: #4E74BF; color: #fff;
+      padding: 2px 8px; border-radius: 5px;
+      font-size: 0.66rem; font-weight: 800; letter-spacing: 0.06em;
+    }
+    .quiz-card p.quiz-instr {
+      margin: 0 0 14px; font-size: 0.78rem; color: #5b7a99; line-height: 1.5;
+    }
+    .quiz-slots {
+      display: flex; gap: 10px; margin-bottom: 14px; align-items: center;
+    }
+    .quiz-slot {
+      flex: 1; min-height: 38px; border: 2px dashed #d2dae4; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 700; color: #99a4b0;
+      background: #fafbfc; transition: all 0.15s; padding: 4px 6px;
+      text-align: center; line-height: 1.2; cursor: pointer;
+    }
+    .quiz-slot.filled {
+      border-style: solid; border-color: #4E74BF;
+      background: #EBF4FB; color: #122A40;
+    }
+    .quiz-slot-num {
+      font-size: 0.6rem; color: #aaa; font-weight: 600; margin-right: 4px;
+      letter-spacing: 0.05em;
+    }
+    .quiz-slot-arrow {
+      font-size: 1rem; color: #c4c9d0; font-weight: 700; flex: 0 0 auto;
+    }
+    .quiz-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .quiz-tag {
+      padding: 8px 14px; border: 2px solid #e8ecf1; border-radius: 10px;
+      background: #fff; font-size: 0.78rem; font-weight: 600; color: #122A40;
+      cursor: pointer; transition: all 0.15s; font-family: inherit;
+    }
+    .quiz-tag:hover:not(:disabled) { border-color: #4E74BF; transform: translateY(-1px); }
+    .quiz-tag:disabled { opacity: 0.35; cursor: default; }
+    .quiz-tag.selected {
+      background: #4E74BF; color: #fff; border-color: #4E74BF;
+      transform: translateY(-1px);
+    }
+    .quiz-tag.selected:hover { background: #3a5c9a; }
+    .quiz-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .quiz-btn {
+      padding: 8px 18px; border: none; border-radius: 8px;
+      font-size: 0.78rem; font-weight: 700; cursor: pointer;
+      font-family: inherit;
+    }
+    .quiz-btn.reset { background: #f3f5f8; color: #5b7a99; }
+    .quiz-btn.reset:hover { background: #e8ecf1; }
+    .quiz-btn.submit { background: #4E74BF; color: #fff; }
+    .quiz-btn.submit:hover:not(:disabled) { background: #3a5c9a; }
+    .quiz-btn.submit:disabled { background: #c4c9d0; cursor: default; }
+    .quiz-feedback {
+      margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+      font-size: 0.8rem; line-height: 1.5; display: none;
+    }
+    .quiz-feedback.correct {
+      background: #E7F4EA; border: 1px solid #9ECCA9; color: #2D5A3A;
+    }
+    .quiz-feedback.wrong {
+      background: #FDECEA; border: 1px solid #F5C0BB; color: #80281D;
+    }
+
+    /* Narrative card at top of viewport area */
+    .narrative-card {
+      background: #EBF4FB; border: 1px solid #c4ddef; border-radius: 12px;
+      padding: 14px 18px; margin-bottom: 16px;
+    }
+    .narrative-card h4 {
+      margin: 0 0 4px; font-size: 0.9rem; color: #122A40; font-weight: 700;
+    }
+    .narrative-card p {
+      margin: 0; font-size: 0.82rem; color: #3a6a8a; line-height: 1.5;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 860px) {
+      .studio-grid { grid-template-columns: 1fr; }
+      .viewport { height: 460px; }
+      .tree-canvas { width: 280px; height: 280px; }
+      .orbit-ring { width: 320px; height: 320px; }
+      .slice-canvas { width: 360px; }
+    }
+    @media (max-width: 560px) {
+      .studio-hero h1 { font-size: 1.5rem; }
+      .viewport { height: 400px; }
+      .tree-canvas { width: 240px; height: 240px; }
+      .orbit-ring { width: 280px; height: 280px; }
+      .slice-canvas { width: 280px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="breadcrumb-bar">
+    <a href="../index.html">Home</a>
+    <span class="sep">&#9654;</span>
+    <a href="../Toolkits/di.html">Diagnostic Imaging</a>
+    <span class="sep">&#9654;</span>
+    <span class="current">CT: Orbit Studio</span>
+  </nav>
+
+  <div class="studio-hero">
+    <div class="hero-badge">CT Module</div>
+    <h1>CT Lab: <span>Spin-Slice-Stack</span></h1>
+    <p>Spin around the tree to find hidden objects, capture slices from every angle</p>
+  </div>
+
+  <div class="objectives-bar">
+    <div class="obj-item"><span class="obj-num">1</span>CT vs X-ray: cross-sectional views</div>
+    <div class="obj-item"><span class="obj-num">2</span>CT workflow: Acquire &rarr; Reconstruct &rarr; Display</div>
+    <div class="obj-item"><span class="obj-num">3</span>Hounsfield Units (HU) and Density</div>
+    <div class="obj-item"><span class="obj-num">4</span>Axial, coronal, sagittal slices &rarr; Spatial Understanding</div>
+  </div>
+
+
+  <div class="studio-wrap">
+    <div class="studio-grid">
+
+      <!-- Left: Controls + X-ray view panel (stacked) -->
+     <div class="left-stack">
+      <div class="controls-panel" id="controlsPanel">
+        <h3 class="panel-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4E74BF" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M16.95 16.95l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M16.95 7.05l1.42-1.42"/></svg>
+          Scan Settings
+        </h3>
+
+        <div class="phase-pills">
+          <div class="phase-pill active" id="phasePill1">Phase 1: X-ray</div>
+          <div class="phase-pill" id="phasePill2">Phase 2: CT</div>
+        </div>
+
+        <div class="ct-sliders" id="ctSliders">
+          <div class="slider-group">
+            <div class="slider-label">
+              <span class="slider-name">Slice Thickness</span>
+              <span class="slider-value" id="thickValue">5 mm</span>
+            </div>
+            <p class="slider-desc">Thinner = sharper detail, more noise. Thicker = smoother but blurrier. Set this BEFORE you take the CT shot &mdash; the value is locked in for the resulting slices.</p>
+            <input type="range" id="thickSlider" min="1" max="10" value="5" step="1" oninput="updateVal('thick')">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label">
+              <span class="slider-name">Rotation Speed</span>
+              <span class="slider-value" id="speedValue">Medium</span>
+            </div>
+            <p class="slider-desc">Faster scan, but may blur</p>
+            <input type="range" id="speedSlider" min="1" max="3" value="2" step="1" oninput="updateVal('speed')">
+          </div>
+        </div>
+
+        <div class="hu-legend">
+          <p class="hu-title">Hounsfield Unit Scale<button type="button" class="hu-help-btn" aria-label="What is a Hounsfield Unit?" onclick="document.getElementById('huPopup').classList.add('visible')">?</button></p>
+          <p class="hu-desc">A grayscale palette that turns X-ray blocking strength into shades of gray</p>
+          <div class="hu-bar"></div>
+          <div class="hu-labels">
+            <span>Air (&minus;1000)</span>
+            <span>Water (0)</span>
+            <span>Bone (+1000)</span>
+          </div>
+        </div>
+
+        <button class="fire-btn" id="scanBtn" onclick="handlePhaseAction()">
+          &#9762;&#65039; Take X-ray &rarr;
+        </button>
+      </div>
+
+      <!-- X-ray view panel (revealed after Phase 1 X-ray) -->
+      <div class="xray-view-panel" id="xrayViewPanel" style="display:none;">
+        <h3>X-ray view (front)</h3>
+        <canvas class="xray-ref-canvas" id="xrayRefCanvas" width="160" height="160"></canvas>
+        <p class="xray-ref-caption">Yellow indicator = current slice plane.</p>
+        <div class="xray-ref-legend">
+          <div class="row"><span>Air (&minus;1000 HU)</span><span class="swatch" style="background:#000;"></span></div>
+          <div class="row"><span>Kite paper </span><span class="swatch" style="background:#5a5a5a;"></span></div>
+          <div class="row"><span>Canopy </span><span class="swatch" style="background:#7e7e7e;"></span></div>
+          <div class="row"><span>Squirrel </span><span class="swatch" style="background:#878787;"></span></div>
+          <div class="row"><span>Wood / nest </span><span class="swatch" style="background:#909090;"></span></div>
+          <div class="row"><span>Eggs </span><span class="swatch" style="background:#cdcdcd;"></span></div>
+          <div class="row"><span>Coin metal </span><span class="swatch" style="background:#fff;"></span></div>
+        </div>
+      </div>
+
+     </div><!-- /left-stack -->
+
+      <!-- Right: Viewport + Slice section -->
+      <div class="canvas-panel">
+
+        <div class="narrative-card" id="narrativeCard">
+          <h4 id="narrativeTitle">Hidden in the Branches</h4>
+          <p id="narrativeText">Hmmm... Something is hiding inside this tree. I can’t see it from the outside though! <br>X-ray might show me what’s there...but can it tell me exactly <strong>WHERE it is?</strong></br></p>
+        </div>
+
+
+        <!-- 3D Viewport: green tree → X-ray view + orbit animation -->
+        <div class="viewport" id="viewport">
+          <span class="vp-label">CT Simulation</span>
+          <span class="vp-mode-label" id="vpModeLabel">Phase 1: X-ray</span>
+
+          <div class="orbit-ring" id="orbitRing">
+            <div class="orbit-launcher" id="orbitLauncher">Launcher</div>
+          </div>
+
+          <canvas class="tree-canvas" id="treeCanvas" width="160" height="160"></canvas>
+          <span class="tree-status-label" id="treeStatusLabel">Scan the tree to discover what’s hidden inside</span>
+        </div>
+
+        <!-- Problem card (shown after Phase 1 X-ray) -->
+        <div class="problem-card" id="problemCard" style="display:none;">
+          <h4 id="problemTitle">&#9888;&#65039; The Problem with X-ray</h4>
+          <p id="problemText"></p>
+        </div>
+
+        <!-- Slice section (revealed after Phase 2 CT scan) -->
+        <div class="slice-section" id="sliceSection" style="display:none;">
+
+          <h3 class="slice-section-title">1. Data Acquisition - Slice viewer</h3>
+
+          <div class="plane-tabs">
+            <button class="plane-tab active" data-plane="axial">Axial &mdash; top-down</button>
+            <button class="plane-tab locked" data-plane="coronal">Coronal &mdash; front-back</button>
+            <button class="plane-tab locked" data-plane="sagittal">Sagittal &mdash; side-side</button>
+          </div>
+
+          <canvas class="slice-canvas" id="sliceCanvas" width="160" height="160"></canvas>
+          <div class="slice-orient" id="sliceOrient">
+            <span id="orientL">L</span><span id="orientT">A (front)</span><span id="orientR">R</span>
+          </div>
+
+          <div class="slice-controls">
+            <div class="ctrl-label">
+              <span class="name">Slice position</span>
+              <span class="val" id="idxVal">y = 50 mm</span>
+            </div>
+            <p class="ctrl-desc">Scrub to find each hidden object at its real depth.</p>
+            <input type="range" id="idxSlider" min="0" max="143" step="1" value="50">
+          </div>
+
+          <div class="mpr-row" id="mprRow">
+            <div class="mpr-msg" id="mprMsg">
+              Coronal &amp; sagittal aren&rsquo;t directly acquired. Press <b>Build New Views</b> to reformat the axial stack.
+            </div>
+            <button class="mpr-btn" id="mprBtn" onclick="unlockMPR()">Build New Views (MPR)</button>
+          </div>
+
+          <div class="slice-info">
+            <b>Plane:</b> <span id="planeInfo">Axial (top-down through y)</span><br>
+            <b>Position:</b> <span id="positionInfo">y = 50 mm &middot; thickness 5 mm</span><br>
+            <b>Visible structures:</b>
+            <div class="visible-list" id="visibleList"></div>
+          </div>
+
+          <!-- Module quiz (revealed after MPR is generated). Two questions:
+               Q1 counts the eggs (gates Q2), Q2 places objects in depth order. -->
+          <div class="quiz-card" id="quizCard" style="display:none;">
+            <h3>Module Quiz</h3>
+
+            <!-- Question 1: How many eggs in the nest -->
+            <div class="quiz-question" id="q1Section">
+              <h4><span class="qbadge">Q1</span> How many eggs are in the nest?</h4>
+              <p class="quiz-instr">
+                The X-ray view only shows the eggs you can see from the front &mdash;
+                but some eggs may be hidden <b>behind others along the Z axis</b>.
+                Scrub through the <b>coronal</b> and <b>sagittal</b> slices to count
+                every egg in the nest, then pick the total below.
+              </p>
+              <div class="quiz-tags" id="q1Tags"></div>
+              <div class="quiz-actions">
+                <button class="quiz-btn reset" id="q1Reset">Reset</button>
+                <button class="quiz-btn submit" id="q1Submit" disabled>Submit answer</button>
+              </div>
+              <div class="quiz-feedback" id="q1Feedback"></div>
+            </div>
+
+            <!-- Question 2: Place objects in depth order. Hidden until Q1 is correct. -->
+            <div class="quiz-question" id="q2Section" style="display:none;">
+              <h4><span class="qbadge">Q2</span> Place the hidden objects in depth order</h4>
+              <p class="quiz-instr">
+                You&rsquo;ve seen all four hidden objects across the slices. Click each one
+                in order from <b>front (closest to viewer)</b> to <b>back</b>. Use the
+                coronal slice plane on the X-ray reference to confirm depth.
+              </p>
+              <div class="quiz-slots" id="q2Slots">
+                <div class="quiz-slot" data-slot="0"><span class="quiz-slot-num">FRONT</span></div>
+                <span class="quiz-slot-arrow">&rarr;</span>
+                <div class="quiz-slot" data-slot="1"></div>
+                <span class="quiz-slot-arrow">&rarr;</span>
+                <div class="quiz-slot" data-slot="2"></div>
+                <span class="quiz-slot-arrow">&rarr;</span>
+                <div class="quiz-slot" data-slot="3"><span class="quiz-slot-num">BACK</span></div>
+              </div>
+              <div class="quiz-tags" id="q2Tags"></div>
+              <div class="quiz-actions">
+                <button class="quiz-btn reset" id="q2Reset">Reset</button>
+                <button class="quiz-btn submit" id="q2Submit" disabled>Submit answer</button>
+              </div>
+              <div class="quiz-feedback" id="q2Feedback"></div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════════
+    //  PROCEDURAL VOLUME (1 voxel = 1 mm)
+    //  Last-hit-wins compositing: list canopy first, then trunk/branches
+    //  (visible through leaves where they overlap), then hidden objects.
+    // ═══════════════════════════════════════════════════════════════════
+    var VOL = { w: 128, h: 144, d: 128 };
+    var primitives = [];
+
+    // ── Canopy: 11 elongated cloud lobes (taller, fills most of the volume) ──
+    // Layer 1 — base of canopy where it meets the trunk
+    primitives.push({ type: 'sphere', label: 'Canopy', cx: 50,  cy: 50,  cz: 64, r: 14, hu: 32 });
+    primitives.push({ type: 'sphere', label: 'Canopy', cx: 78,  cy: 50,  cz: 64, r: 14, hu: 32 });
+    // Layer 2
+    primitives.push({ type: 'sphere', label: 'Canopy', cx: 30,  cy: 68,  cz: 64, r: 20, hu: 30 });
+    primitives.push({ type: 'sphere', label: 'Canopy', cx: 64,  cy: 62,  cz: 64, r: 18, hu: 32 });
+    primitives.push({ type: 'sphere', label: 'Canopy', cx: 98,  cy: 68,  cz: 64, r: 20, hu: 30 });
+    // Layer 3 — widest mid-band
+    primitives.push({ type: 'sphere', label: 'Canopy', cx: 22,  cy: 88,  cz: 64, r: 23, hu: 30 });
+    primitives.push({ type: 'sphere', label: 'Canopy', cx: 62,  cy: 86,  cz: 64, r: 23, hu: 32 });
+    primitives.push({ type: 'sphere', label: 'Canopy', cx: 106, cy: 88,  cz: 64, r: 22, hu: 30 });
+    // Layer 4
+    primitives.push({ type: 'sphere', label: 'Canopy', cx: 40,  cy: 110, cz: 64, r: 20, hu: 32 });
+    primitives.push({ type: 'sphere', label: 'Canopy', cx: 88,  cy: 110, cz: 64, r: 20, hu: 33 });
+    // Layer 5 — top crown
+    primitives.push({ type: 'sphere', label: 'Canopy', cx: 64,  cy: 119, cz: 64, r: 19, hu: 35 });
+
+    // ── Trunk (smaller — just an anchor at the base) ──
+    primitives.push({ type: 'taperY', label: 'Trunk', cx: 64, cz: 64, y0: 4, y1: 45, r0: 10, r1: 7, hu: 130 });
+
+    // ── Branches: 3 short branches up into the canopy ──
+    var branchBase = [64, 36, 64];
+    primitives.push({ type: 'segment', label: 'Branch', from: branchBase, to: [64, 70, 64], r: 4, hu: 120 });
+    primitives.push({ type: 'segment', label: 'Branch', from: branchBase, to: [50, 60, 62], r: 2.5, hu: 120 });
+    primitives.push({ type: 'segment', label: 'Branch', from: branchBase, to: [78, 60, 66], r: 2.5, hu: 120 });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  HIDDEN OBJECTS — clustered tightly in the upper-mid canopy so they
+    //  overlap heavily in the X-ray view. Depth-spaced for the quiz:
+    //  Kite (z=44) → Coin (z=54) → Nest (z=66) → Squirrel (z=78)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Kite — bigger, square diamond (rotated 45°) hanging high in the canopy.
+    // HU bumped from realistic paper (~10) so the kite shows through the canopy
+    // in the MIP X-ray view — pure-paper density gets occluded by the canopy.
+    // 3× scaled relative to the previous version.
+    primitives.push({ type: 'boxRot', label: 'Kite',      cx: 52, cy: 108, cz: 44, hx: 14,  hy: 14,  hz: 4,   rotZ: Math.PI/4, hu: 250 });
+    // Kite tail — "+" shaped knots trailing below the diamond. Each "+" is built
+    // from a horizontal bar and a vertical bar (two thin boxRot primitives).
+    function plusBead(cx, cy) {
+      primitives.push({ type: 'boxRot', label: 'Kite tail', cx: cx, cy: cy, cz: 44, hx: 2.4, hy: 0.6, hz: 2, rotZ: 0, hu: 220 });
+      primitives.push({ type: 'boxRot', label: 'Kite tail', cx: cx, cy: cy, cz: 44, hx: 0.6, hy: 2.4, hz: 2, rotZ: 0, hu: 220 });
+    }
+    plusBead(52, 85);
+    plusBead(50, 78);
+    plusBead(48, 71);
+    plusBead(44, 64);
+
+    // Coin 
+    primitives.push({ type: 'discY', label: 'Coin', cx: 66, cy: 95, cz: 54, r: 4, halfH: 0.6, hu: 3000 });
+
+    // Bird's nest — 3 eggs
+    // Bowl: half-ellipsoid with the FLAT side up (rim at y=cy). Curved underside
+    // gives the nest its saucer shape; eggs perch on the flat rim above.
+    primitives.push({ type: 'halfEllipsoidBottom', label: "Bird's Nest", cx: 78, cy: 65, cz: 66, rx: 18, ry: 6,   rz: 16,   hu: 130 });
+    // Three eggs sitting on the rim, vertical-oval ellipsoids (taller than wide).
+    // Center egg is bigger to mirror the reference image.
+    primitives.push({ type: 'ellipsoid', label: 'Egg', cx: 70, cy: 68, cz: 66, rx: 2.75, ry: 3.75, rz: 2.75, hu: 700 });
+    primitives.push({ type: 'ellipsoid', label: 'Egg', cx: 78, cy: 70, cz: 66, rx: 3.7,  ry: 5,    rz: 3.7,  hu: 700 });
+    primitives.push({ type: 'ellipsoid', label: 'Egg', cx: 86, cy: 68, cz: 66, rx: 2.75, ry: 3.75, rz: 2.75, hu: 700 });
+    // Two more eggs hidden along the Z axis — same XY as the center egg so they
+    // get fully occluded in the front MIP X-ray view. Only revealed when the
+    // user scrubs through coronal/sagittal slices. Drives the "5 eggs" quiz.
+    primitives.push({ type: 'ellipsoid', label: 'Egg', cx: 78, cy: 68, cz: 56, rx: 2.75, ry: 3.75, rz: 2.75, hu: 700 });
+    primitives.push({ type: 'ellipsoid', label: 'Egg', cx: 78, cy: 68, cz: 76, rx: 2.75, ry: 3.75, rz: 2.75, hu: 700 });
+
+    // Squirrel — 2× scaled from the previous version, around visual center (74,95).
+    // Both positions and radii are doubled so the silhouette stays recognizable
+    // at twice the size. SQRZ doubled from 2.5 → 5 so the squirrel is also
+    // visible across more coronal slices (z range ≈ 73–83).
+    var SQZ = 78, SQRZ = 5;
+    primitives.push({ type: 'ellipsoid', label: 'Squirrel', cx: 74, cy: 78,  cz: SQZ, rx: 10,  ry: 8,   rz: SQRZ, hu: 200 });
+    primitives.push({ type: 'ellipsoid', label: 'Squirrel', cx: 68, cy: 86,  cz: SQZ, rx: 8,   ry: 6,   rz: SQRZ, hu: 200 });
+    primitives.push({ type: 'ellipsoid', label: 'Squirrel', cx: 62, cy: 92,  cz: SQZ, rx: 5.6, ry: 5,   rz: SQRZ, hu: 200 });
+    primitives.push({ type: 'ellipsoid', label: 'Squirrel', cx: 56, cy: 90,  cz: SQZ, rx: 3,   ry: 2,   rz: SQRZ, hu: 200 });
+    primitives.push({ type: 'sphere',    label: 'Squirrel', cx: 63, cy: 97,  cz: SQZ, r: 2,   hu: 200 });
+    primitives.push({ type: 'ellipsoid', label: 'Squirrel', cx: 62, cy: 78,  cz: SQZ, rx: 2.4, ry: 3,   rz: SQRZ, hu: 200 });
+    // Tail nodes (S-curve, fluffy) — slightly lower HU for fur vs body
+    primitives.push({ type: 'sphere', label: 'Squirrel', cx: 84, cy: 80,  cz: SQZ, r: 5,   hu: 180 });
+    primitives.push({ type: 'sphere', label: 'Squirrel', cx: 86, cy: 86,  cz: SQZ, r: 5.6, hu: 180 });
+    primitives.push({ type: 'sphere', label: 'Squirrel', cx: 87, cy: 92,  cz: SQZ, r: 6,   hu: 180 });
+    primitives.push({ type: 'sphere', label: 'Squirrel', cx: 86, cy: 98,  cz: SQZ, r: 6,   hu: 180 });
+    primitives.push({ type: 'sphere', label: 'Squirrel', cx: 82, cy: 104, cz: SQZ, r: 5.6, hu: 180 });
+    primitives.push({ type: 'sphere', label: 'Squirrel', cx: 76, cy: 107, cz: SQZ, r: 5.2, hu: 180 });
+    primitives.push({ type: 'sphere', label: 'Squirrel', cx: 70, cy: 106, cz: SQZ, r: 4.4, hu: 180 });
+    primitives.push({ type: 'sphere', label: 'Squirrel', cx: 64, cy: 102, cz: SQZ, r: 3,   hu: 180 });
+    // Eye dot (carves a darker spot inside the head)
+    primitives.push({ type: 'sphere', label: 'Squirrel', cx: 59, cy: 93,  cz: SQZ, r: 1.4, hu: -500 });
+
+    // Walks the primitive list and returns the LAST primitive that contains the
+    // point — gives us per-voxel last-hit-wins compositing.
+    function densityAt(x, y, z) {
+      var hu = -1000;
+      for (var i = 0; i < primitives.length; i++) {
+        var p = primitives[i];
+        if (containsPoint(p, x, y, z)) hu = p.hu;
+      }
+      return hu;
+    }
+
+    // Variant that returns the primitive itself (or null) — used by the green-tree
+    // projection so we can color by label rather than HU.
+    function primitiveAt(x, y, z, allowedSet) {
+      var hit = null;
+      for (var i = 0; i < primitives.length; i++) {
+        var p = primitives[i];
+        if (allowedSet && !allowedSet[p.label]) continue;
+        if (containsPoint(p, x, y, z)) hit = p;
+      }
+      return hit;
+    }
+
+    function containsPoint(p, x, y, z) {
+      switch (p.type) {
+        case 'sphere': {
+          var dx = x - p.cx, dy = y - p.cy, dz = z - p.cz;
+          return (dx*dx + dy*dy + dz*dz <= p.r*p.r);
+        }
+        case 'ellipsoid': {
+          var dx = (x - p.cx)/p.rx, dy = (y - p.cy)/p.ry, dz = (z - p.cz)/p.rz;
+          return (dx*dx + dy*dy + dz*dz <= 1);
+        }
+        case 'halfEllipsoidBottom': {
+          // Lower half of an ellipsoid — flat top rim at y=cy, curved underside.
+          // Used for the bird's-nest bowl that the eggs sit on.
+          if (y > p.cy) return false;
+          var dx = (x - p.cx)/p.rx, dy = (y - p.cy)/p.ry, dz = (z - p.cz)/p.rz;
+          return (dx*dx + dy*dy + dz*dz <= 1);
+        }
+        case 'taperY': {
+          if (y < p.y0 || y > p.y1) return false;
+          var t = (y - p.y0) / (p.y1 - p.y0);
+          var r = p.r0 + (p.r1 - p.r0) * t;
+          var dx = x - p.cx, dz = z - p.cz;
+          return (dx*dx + dz*dz <= r*r);
+        }
+        case 'discY': {
+          if (Math.abs(y - p.cy) > p.halfH) return false;
+          var dx = x - p.cx, dz = z - p.cz;
+          return (dx*dx + dz*dz <= p.r*p.r);
+        }
+        case 'segment': {
+          var ax = p.to[0]-p.from[0], ay = p.to[1]-p.from[1], az = p.to[2]-p.from[2];
+          var bx = x-p.from[0], by = y-p.from[1], bz = z-p.from[2];
+          var al = ax*ax+ay*ay+az*az;
+          var t = (bx*ax+by*ay+bz*az)/al;
+          if (t < 0) t = 0; else if (t > 1) t = 1;
+          var px = p.from[0]+ax*t, py = p.from[1]+ay*t, pz = p.from[2]+az*t;
+          var dx = x-px, dy = y-py, dz = z-pz;
+          return (dx*dx + dy*dy + dz*dz <= p.r*p.r);
+        }
+        case 'boxRot': {
+          var dx = x - p.cx, dy = y - p.cy, dz = z - p.cz;
+          var c = Math.cos(-p.rotZ), s = Math.sin(-p.rotZ);
+          var lx = dx*c - dy*s, ly = dx*s + dy*c;
+          return (Math.abs(lx) <= p.hx && Math.abs(ly) <= p.hy && Math.abs(dz) <= p.hz);
+        }
+        case 'torus': {
+          var dx = x - p.cx, dy = y - p.cy, dz = z - p.cz;
+          var horz = Math.sqrt(dx*dx + dz*dz) - p.R;
+          return (horz*horz + dy*dy <= p.r*p.r);
+        }
+      }
+      return false;
+    }
+
+    // Window/level mapping HU → grayscale (lo=-800, hi=1200).
+    function huToGray(hu) {
+      var lo = -800, hi = 1200;
+      if (hu <= lo) return 0;
+      if (hu >= hi) return 255;
+      return Math.round(((hu - lo) / (hi - lo)) * 255);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  STATE
+    // ═══════════════════════════════════════════════════════════════════
+    var challengePhase = 1;          // 1 = X-ray, 2 = CT
+    var xrayTaken = false;
+    var ctTaken = false;
+    var capturedThickness = 5;       // thickness snapshot at the moment CT was taken
+    var isScanning = false;
+    var plane = 'axial';
+    var sliceIdx = 50;
+    var mprGenerated = false;
+    var planeDefaults = { axial: 50, coronal: 64, sagittal: 64 };
+    var planeMax      = { axial: VOL.h - 1, coronal: VOL.d - 1, sagittal: VOL.w - 1 };
+    var planeAxisName = { axial: 'y', coronal: 'z', sagittal: 'x' };
+
+    // Treeskeleton labels (used by the green-tree projection to skip hidden objects).
+    var TREE_LABELS = { 'Canopy': true, 'Trunk': true, 'Branch': true };
+
+    // Color palette for the green-tree mode (image-#2 style).
+    var COLOR_CANOPY = [91, 155, 91];
+    var COLOR_TRUNK  = [93, 58, 23];
+    var COLOR_BRANCH = [107, 74, 37];
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  RENDER: top-viewport tree canvas (green tree → X-ray view)
+    // ═══════════════════════════════════════════════════════════════════
+    // Canvases are 160×160 (square) for circle clipping. The volume (128w × 144h)
+    // is centered with a small margin so the inscribed circle (radius 80) fully
+    // contains the tree without clipping any canopy edges.
+    var CANVAS_W = 160, CANVAS_H = 160;
+    var PAD_W = (CANVAS_W - VOL.w) / 2;  // 16 — horizontal pad for x and z (both 128 wide)
+    var PAD_Y = (CANVAS_H - VOL.h) / 2;  // 8  — vertical pad for y (144 tall)
+    var CANVAS_PAD_X = PAD_W;
+
+    function renderTopViewport(mode) {
+      // mode: 'green' (only canopy/trunk/branches in color) or 'xray' (all primitives in grayscale)
+      var canvas = document.getElementById('treeCanvas');
+      var ctx = canvas.getContext('2d');
+      var W = canvas.width, H = canvas.height;
+      var img = ctx.createImageData(W, H);
+
+      var allowed = (mode === 'green') ? TREE_LABELS : null;
+
+      for (var py = 0; py < H; py++) {
+        for (var px = 0; px < W; px++) {
+          var i = (py * W + px) * 4;
+          var x = px - PAD_W;
+          var y = (H - 1 - py) - PAD_Y;
+          var outsideVol = (x < 0 || x >= VOL.w || y < 0 || y >= VOL.h);
+
+          if (mode === 'green') {
+            // Green mode: paint dark blue outside the tree so the canvas blends
+            // into the viewport background → green tree appears to float on dark blue.
+            if (outsideVol) {
+              img.data[i]=13; img.data[i+1]=27; img.data[i+2]=42; img.data[i+3]=255;
+              continue;
+            }
+            var hitPrim = null;
+            for (var z = 0; z < VOL.d; z += 2) {
+              var p = primitiveAt(x, y, z, allowed);
+              if (p && (!hitPrim || p.hu > hitPrim.hu)) hitPrim = p;
+            }
+            if (hitPrim) {
+              var col = hitPrim.label === 'Canopy' ? COLOR_CANOPY :
+                        hitPrim.label === 'Branch' ? COLOR_BRANCH : COLOR_TRUNK;
+              img.data[i]=col[0]; img.data[i+1]=col[1]; img.data[i+2]=col[2]; img.data[i+3]=255;
+            } else {
+              img.data[i]=13; img.data[i+1]=27; img.data[i+2]=42; img.data[i+3]=255;
+            }
+          } else {
+            // X-ray mode: paint BLACK both outside the volume and inside-empty,
+            // so the whole canvas (clipped to a circle) reads as one black disc
+            // with the tree drawn on top — no visible square against the circle.
+            if (outsideVol) {
+              img.data[i]=0; img.data[i+1]=0; img.data[i+2]=0; img.data[i+3]=255;
+              continue;
+            }
+            var maxHu = -1000;
+            for (var z = 0; z < VOL.d; z += 2) {
+              var hu = densityAt(x, y, z);
+              if (hu > maxHu) maxHu = hu;
+            }
+            var g = huToGray(maxHu);
+            img.data[i]=g; img.data[i+1]=g; img.data[i+2]=g; img.data[i+3]=255;
+          }
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  RENDER: slice section (small X-ray reference + slice canvas)
+    // ═══════════════════════════════════════════════════════════════════
+    var xrayRefCache = null;
+
+    // X-ray reference uses the same 144x144 layout as the top viewport so the
+    // slice-plane indicator lines up cleanly between the two.
+    function buildXrayRef() {
+      var canvas = document.getElementById('xrayRefCanvas');
+      var ctx = canvas.getContext('2d');
+      var W = canvas.width, H = canvas.height;
+      var img = ctx.createImageData(W, H);
+      for (var py = 0; py < H; py++) {
+        for (var px = 0; px < W; px++) {
+          var i = (py * W + px) * 4;
+          var x = px - PAD_W;
+          var y = (H - 1 - py) - PAD_Y;
+          if (x < 0 || x >= VOL.w || y < 0 || y >= VOL.h) {
+            img.data[i]=0; img.data[i+1]=0; img.data[i+2]=0; img.data[i+3]=255;
+            continue;
+          }
+          var maxHu = -1000;
+          for (var z = 0; z < VOL.d; z += 2) {
+            var hu = densityAt(x, y, z);
+            if (hu > maxHu) maxHu = hu;
+          }
+          var g = huToGray(maxHu);
+          img.data[i]=g; img.data[i+1]=g; img.data[i+2]=g; img.data[i+3]=255;
+        }
+      }
+      xrayRefCache = img;
+    }
+
+    function drawXrayRefWithMarker() {
+      var canvas = document.getElementById('xrayRefCanvas');
+      var ctx = canvas.getContext('2d');
+      if (!xrayRefCache) buildXrayRef();
+      ctx.putImageData(xrayRefCache, 0, 0);
+      // Don't draw the slice-plane marker until CT has been taken.
+      if (!ctTaken) return;
+      ctx.strokeStyle = '#ffd24a';
+      ctx.fillStyle = '#ffd24a';
+      ctx.lineWidth = 1.4;
+      var W = canvas.width, H = canvas.height;
+      ctx.beginPath();
+      if (plane === 'axial') {
+        var ay = (H - 1 - sliceIdx) - PAD_Y;  // map vol_y → canvas_py with vertical padding
+        ctx.moveTo(PAD_W, ay); ctx.lineTo(W - PAD_W, ay);
+      } else if (plane === 'sagittal') {
+        var ax = sliceIdx + PAD_W;
+        ctx.moveTo(ax, PAD_Y); ctx.lineTo(ax, H - PAD_Y);
+      } else {
+        ctx.font = 'bold 10px Inter, sans-serif';
+        ctx.fillText('z=' + sliceIdx, 6, 14);
+      }
+      ctx.stroke();
+    }
+
+    // Adds a small amount of synthesized noise that gets reduced when the user
+    // chose a thicker (more averaged) slice. Mimics real CT physics.
+    var NOISE_AMP = 60;
+
+    // Slice canvas is 200×200 — square for symmetric display. Each plane has its
+    // own padding so the volume sits centered with a clean black border:
+    //   Axial    (XZ, 128×128) → PAD_W on all sides
+    //   Coronal  (XY, 128×144) → PAD_W horizontally, PAD_Y vertically
+    //   Sagittal (ZY, 128×144) → PAD_W horizontally, PAD_Y vertically
+    function renderSliceCanvas() {
+      var canvas = document.getElementById('sliceCanvas');
+      var ctx = canvas.getContext('2d');
+      var W = canvas.width, H = canvas.height;
+      var img = ctx.createImageData(W, H);
+      var samples = Math.max(1, capturedThickness);
+      var halfStep = (samples - 1) / 2;
+
+      for (var py = 0; py < H; py++) {
+        for (var px = 0; px < W; px++) {
+          var i = (py * W + px) * 4;
+          var x, y, z;
+          var inside = true;
+
+          if (plane === 'axial') {
+            x = px - PAD_W;
+            z = (H - 1 - py) - PAD_W;  // axial Z is also 128 wide → use PAD_W
+            if (x < 0 || x >= VOL.w || z < 0 || z >= VOL.d) inside = false;
+          } else if (plane === 'coronal') {
+            x = px - PAD_W;
+            y = (H - 1 - py) - PAD_Y;
+            if (x < 0 || x >= VOL.w || y < 0 || y >= VOL.h) inside = false;
+          } else {
+            z = px - PAD_W;
+            y = (H - 1 - py) - PAD_Y;
+            if (z < 0 || z >= VOL.d || y < 0 || y >= VOL.h) inside = false;
+          }
+
+          if (!inside) {
+            img.data[i]=0; img.data[i+1]=0; img.data[i+2]=0; img.data[i+3]=255;
+            continue;
+          }
+
+          var sum = 0;
+          for (var s = 0; s < samples; s++) {
+            var off = s - halfStep;
+            var sx = x, sy = y, sz = z;
+            if (plane === 'axial')        sy = sliceIdx + off;
+            else if (plane === 'coronal') sz = sliceIdx + off;
+            else                          sx = sliceIdx + off;
+            var hu = densityAt(sx, sy, sz);
+            sum += hu + (Math.random() * 2 - 1) * NOISE_AMP;
+          }
+          var g = huToGray(sum / samples);
+          img.data[i]=g; img.data[i+1]=g; img.data[i+2]=g; img.data[i+3]=255;
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+
+      drawXrayRefWithMarker();
+      updateSliceInfo();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  Slice viewer info / orientation labels
+    // ═══════════════════════════════════════════════════════════════════
+    function primBBox(p) {
+      switch (p.type) {
+        case 'sphere':    return { x0: p.cx-p.r,  x1: p.cx+p.r,  y0: p.cy-p.r,  y1: p.cy+p.r,  z0: p.cz-p.r,  z1: p.cz+p.r };
+        case 'ellipsoid': return { x0: p.cx-p.rx, x1: p.cx+p.rx, y0: p.cy-p.ry, y1: p.cy+p.ry, z0: p.cz-p.rz, z1: p.cz+p.rz };
+        case 'halfEllipsoidBottom': return { x0: p.cx-p.rx, x1: p.cx+p.rx, y0: p.cy-p.ry, y1: p.cy, z0: p.cz-p.rz, z1: p.cz+p.rz };
+        case 'taperY': {
+          var r = Math.max(p.r0, p.r1);
+          return { x0: p.cx-r, x1: p.cx+r, y0: p.y0, y1: p.y1, z0: p.cz-r, z1: p.cz+r };
+        }
+        case 'discY':     return { x0: p.cx-p.r, x1: p.cx+p.r, y0: p.cy-p.halfH, y1: p.cy+p.halfH, z0: p.cz-p.r, z1: p.cz+p.r };
+        case 'segment':   return {
+          x0: Math.min(p.from[0], p.to[0]) - p.r, x1: Math.max(p.from[0], p.to[0]) + p.r,
+          y0: Math.min(p.from[1], p.to[1]) - p.r, y1: Math.max(p.from[1], p.to[1]) + p.r,
+          z0: Math.min(p.from[2], p.to[2]) - p.r, z1: Math.max(p.from[2], p.to[2]) + p.r
+        };
+        case 'boxRot': {
+          var rad = Math.max(p.hx, p.hy);
+          return { x0: p.cx-rad, x1: p.cx+rad, y0: p.cy-rad, y1: p.cy+rad, z0: p.cz-p.hz, z1: p.cz+p.hz };
+        }
+        case 'torus': {
+          var R = p.R + p.r;
+          return { x0: p.cx-R, x1: p.cx+R, y0: p.cy-p.r, y1: p.cy+p.r, z0: p.cz-R, z1: p.cz+R };
+        }
+      }
+      return { x0:-1e9,x1:1e9,y0:-1e9,y1:1e9,z0:-1e9,z1:1e9 };
+    }
+
+    function updateSliceInfo() {
+      var lo = sliceIdx - capturedThickness/2;
+      var hi = sliceIdx + capturedThickness/2;
+      var seen = {};
+      for (var i = 0; i < primitives.length; i++) {
+        var p = primitives[i];
+        var bb = primBBox(p);
+        var hit = false;
+        if (plane === 'axial')         hit = (hi >= bb.y0 && lo <= bb.y1);
+        else if (plane === 'coronal')  hit = (hi >= bb.z0 && lo <= bb.z1);
+        else                            hit = (hi >= bb.x0 && lo <= bb.x1);
+        if (hit) seen[p.label] = true;
+      }
+      var order = ['Trunk','Branch','Canopy','Coin','Squirrel','Kite','Kite tail',"Bird's Nest",'Egg'];
+      var list = document.getElementById('visibleList');
+      list.innerHTML = '';
+      for (var k = 0; k < order.length; k++) {
+        var span = document.createElement('span');
+        if (!seen[order[k]]) span.classList.add('no');
+        span.textContent = order[k];
+        list.appendChild(span);
+      }
+
+      var planeName = {
+        axial:    'Axial (top-down through y) — primary acquisition',
+        coronal:  'Coronal (front-back through z) — MPR reformat',
+        sagittal: 'Sagittal (side-side through x) — MPR reformat'
+      }[plane];
+      document.getElementById('planeInfo').textContent = planeName;
+      document.getElementById('positionInfo').textContent =
+        planeAxisName[plane] + ' = ' + sliceIdx + ' mm  ·  thickness ' + capturedThickness + ' mm';
+      document.getElementById('idxVal').textContent = planeAxisName[plane] + ' = ' + sliceIdx + ' mm';
+
+      var ot = document.getElementById('orientT');
+      var ol = document.getElementById('orientL');
+      var or_ = document.getElementById('orientR');
+      if (plane === 'axial')         { ot.textContent = 'A (front)'; ol.textContent = 'L'; or_.textContent = 'R'; }
+      else if (plane === 'coronal')  { ot.textContent = 'TOP';        ol.textContent = 'L'; or_.textContent = 'R'; }
+      else                            { ot.textContent = 'TOP';        ol.textContent = 'A (front)'; or_.textContent = 'P (back)'; }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  PHASE STATE MACHINE
+    // ═══════════════════════════════════════════════════════════════════
+    function updatePhaseUI() {
+      var pill1 = document.getElementById('phasePill1');
+      var pill2 = document.getElementById('phasePill2');
+      var btn = document.getElementById('scanBtn');
+      var vpLabel = document.getElementById('vpModeLabel');
+      var ctSliders = document.getElementById('ctSliders');
+      var orbitRing = document.getElementById('orbitRing');
+
+      pill1.className = 'phase-pill' + (challengePhase === 1 ? ' active' : ' completed');
+      pill2.className = 'phase-pill' + (challengePhase === 2 ? ' active' : '');
+
+      if (challengePhase === 1) {
+        btn.className = 'fire-btn';
+        btn.innerHTML = '&#9762;&#65039; Take X-ray &rarr;';
+        vpLabel.textContent = 'Phase 1: X-ray';
+        ctSliders.style.display = 'none';
+        // Phase 1: hide the dashed orbit track (launcher itself stays visible
+        // at the bottom to indicate where the X-ray is being shot from).
+        orbitRing.classList.remove('show-track');
+      } else {
+        btn.className = 'fire-btn phase-transition';
+        btn.innerHTML = '&#128260; Take CT Shot &rarr;';
+        vpLabel.textContent = 'Phase 2: CT Scan';
+        ctSliders.style.display = 'block';
+        // Phase 2: show the dashed orbit track now that we're actually orbiting.
+        orbitRing.classList.add('show-track');
+      }
+    }
+
+    function handlePhaseAction() {
+      if (isScanning) return;
+      if (challengePhase === 1) {
+        takeXray();
+      } else {
+        takeCT();
+      }
+    }
+
+    // ── Phase 1: X-ray ──
+    function takeXray() {
+      isScanning = true;
+      var btn = document.getElementById('scanBtn');
+      btn.classList.add('scanning');
+      btn.textContent = 'Scanning...';
+
+      // Repaint the top viewport canvas as a grayscale X-ray view, and reveal
+      // the X-ray view panel in the left column.
+      setTimeout(function() {
+        renderTopViewport('xray');
+        document.getElementById('treeStatusLabel').textContent =
+          'X-Ray Result: Hidden objects revealed but stacked';
+        xrayTaken = true;
+
+        // Reveal + populate the left-column X-ray view panel
+        document.getElementById('xrayViewPanel').style.display = 'block';
+        buildXrayRef();
+        drawXrayRefWithMarker();
+
+        document.getElementById('problemText').textContent =
+          'The flat X-ray shows shapes overlapping with each other. How many eggs are there? Where exactly is the squirrel? A single shadow can’t tell us.';
+        document.getElementById('problemCard').style.display = 'block';
+
+        isScanning = false;
+        btn.classList.remove('scanning');
+        btn.className = 'fire-btn phase-transition';
+        btn.innerHTML = '&#128260; Now Try CT! &rarr;';
+        btn.onclick = function() { transitionToPhase2(); };
+      }, 600);
+    }
+
+    function transitionToPhase2() {
+      challengePhase = 2;
+      document.getElementById('problemCard').style.display = 'none';
+      updatePhaseUI();
+      var btn = document.getElementById('scanBtn');
+      btn.onclick = function() { handlePhaseAction(); };
+    }
+
+    // ── Phase 2: CT ──
+    function takeCT() {
+      if (isScanning) return;
+      isScanning = true;
+      var btn = document.getElementById('scanBtn');
+      btn.classList.add('scanning');
+      btn.textContent = 'Scanning...';
+
+      // Capture the thickness setting at scan time — locks in the slice quality.
+      capturedThickness = parseInt(document.getElementById('thickSlider').value);
+
+      animateCT(function() {
+        isScanning = false;
+        btn.classList.remove('scanning');
+        btn.className = 'fire-btn phase-transition';
+        btn.innerHTML = '&#128260; Take CT Shot &rarr;';
+        ctTaken = true;
+        revealSliceSection();
+      });
+    }
+
+    function animateCT(cb) {
+      var numAngles = 72;
+      var speed = parseInt(document.getElementById('speedSlider').value);
+      var launcher = document.getElementById('orbitLauncher');
+      var ringW = 360;
+      var cx = ringW / 2, cy = ringW / 2, r = ringW / 2 - 2;
+
+      var angleStep = 360 / numAngles;
+      var scanIdx = 0;
+      var delayMs = [0, 80, 50, 25][speed];
+
+      function nextAngle() {
+        if (scanIdx >= numAngles) {
+          // Park the launcher back at the bottom (its resting pose) so it
+          // doesn't get stuck at whatever angle the last frame landed on.
+          var restRad = Math.PI / 2;  // 90° = 6 o'clock
+          launcher.style.left = (cx + r * Math.cos(restRad)) + 'px';
+          launcher.style.top  = (cy + r * Math.sin(restRad)) + 'px';
+          launcher.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+          cb();
+          return;
+        }
+        // Offset by 90° so the orbit starts and ends at the launcher's resting
+        // position (6 o'clock / bottom) — no jarring snap to 3 o'clock.
+        var deg = (scanIdx * angleStep + 90) % 360;
+        var rad = (deg * Math.PI) / 180;
+        launcher.style.left = (cx + r * Math.cos(rad)) + 'px';
+        launcher.style.top  = (cy + r * Math.sin(rad)) + 'px';
+        // Rotate the launcher so the triangular nose points inward.
+        // Default nose direction is "up" (-Y). At orbit angle θ the launcher sits
+        // at (cos θ, sin θ) from center; the inward vector is (-cos θ, -sin θ).
+        // CSS rotate is clockwise → the rotation that maps "up" to the inward
+        // direction is (θ − 90)°.
+        launcher.style.transform = 'translate(-50%, -50%) rotate(' + (deg - 90) + 'deg)';
+        scanIdx++;
+        setTimeout(nextAngle, delayMs);
+      }
+      nextAngle();
+    }
+
+    function revealSliceSection() {
+      document.getElementById('sliceSection').style.display = 'block';
+      // Default to axial at the current default position. Render slice + X-ray ref.
+      plane = 'axial';
+      sliceIdx = planeDefaults.axial;
+      var idxSlider = document.getElementById('idxSlider');
+      idxSlider.max = planeMax.axial;
+      idxSlider.value = sliceIdx;
+
+      // Reset MPR gate state on each new CT (re-take regenerates axial only)
+      mprGenerated = false;
+      var locked = ['coronal','sagittal'];
+      var tabs = document.querySelectorAll('.plane-tab');
+      tabs.forEach(function(t) {
+        t.classList.remove('active');
+        if (locked.indexOf(t.getAttribute('data-plane')) >= 0) t.classList.add('locked');
+      });
+      document.querySelector('.plane-tab[data-plane="axial"]').classList.add('active');
+      document.getElementById('mprBtn').disabled = false;
+      document.getElementById('mprBtn').textContent = 'Build New Views (MPR)';
+      document.getElementById('mprMsg').innerHTML =
+        'Coronal &amp; sagittal aren&rsquo;t directly acquired. Press <b>Build New Views</b> to reformat the axial stack.';
+      document.getElementById('mprRow').classList.remove('done');
+
+      buildXrayRef();
+      renderSliceCanvas();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  Slice viewer interactions
+    // ═══════════════════════════════════════════════════════════════════
+    function unlockMPR() {
+      mprGenerated = true;
+      var locked = document.querySelectorAll('.plane-tab.locked');
+      for (var i = 0; i < locked.length; i++) locked[i].classList.remove('locked');
+      var btn = document.getElementById('mprBtn');
+      btn.disabled = true;
+      btn.textContent = '✓ MPR generated';
+      document.getElementById('mprMsg').innerHTML =
+        'Coronal &amp; sagittal reformats unlocked. Same volume, sampled along a different axis.';
+      document.getElementById('mprRow').classList.add('done');
+
+      // Final stage: show the depth-order quiz
+      showQuiz();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  MODULE QUIZ — two questions in sequence:
+    //   Q1: How many eggs are in the nest? (answer: 5)
+    //   Q2: Place hidden objects front-to-back (Kite → Coin → Nest → Squirrel)
+    //  Q2 is hidden until Q1 is answered correctly.
+    // ═══════════════════════════════════════════════════════════════════
+
+    // ── Q1: egg count ──
+    var Q1_CORRECT_COUNT = 5;
+    var Q1_CHOICES = [1, 2, 3, 4, 5, 6, 7, 8];
+    var q1Selected = null;
+    var q1Done = false;
+
+    // ── Q2: depth order ──
+    var Q2_OBJECTS = ['Kite', 'Coin', "Bird's Nest", 'Squirrel'];
+    var Q2_CORRECT = ['Kite', 'Coin', "Bird's Nest", 'Squirrel'];
+    var q2State = [null, null, null, null];
+    var q2Done = false;
+
+    function showQuiz() {
+      var card = document.getElementById('quizCard');
+      if (card.style.display !== 'none') return;
+      card.style.display = 'block';
+      buildQ1Tags();
+      buildQ2Tags();
+      resetQ1();
+      resetQ2();
+      document.getElementById('q2Section').style.display = 'none';
+      setTimeout(function(){ card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 100);
+    }
+
+    // ── Q1 wiring ──
+    function buildQ1Tags() {
+      var container = document.getElementById('q1Tags');
+      container.innerHTML = '';
+      Q1_CHOICES.forEach(function(num) {
+        var btn = document.createElement('button');
+        btn.className = 'quiz-tag';
+        btn.textContent = num;
+        btn.addEventListener('click', function() { onQ1Click(num, btn); });
+        container.appendChild(btn);
+      });
+    }
+
+    function onQ1Click(num, btn) {
+      if (q1Done) return;
+      q1Selected = num;
+      var tags = document.querySelectorAll('#q1Tags .quiz-tag');
+      for (var i = 0; i < tags.length; i++) tags[i].classList.toggle('selected', tags[i] === btn);
+      document.getElementById('q1Submit').disabled = false;
+      var fb = document.getElementById('q1Feedback');
+      if (fb.classList.contains('wrong')) {
+        fb.style.display = 'none';
+        fb.className = 'quiz-feedback';
+      }
+    }
+
+    function resetQ1() {
+      q1Selected = null;
+      q1Done = false;
+      var tags = document.querySelectorAll('#q1Tags .quiz-tag');
+      for (var i = 0; i < tags.length; i++) {
+        tags[i].classList.remove('selected');
+        tags[i].disabled = false;
+      }
+      document.getElementById('q1Submit').disabled = true;
+      var fb = document.getElementById('q1Feedback');
+      fb.style.display = 'none';
+      fb.className = 'quiz-feedback';
+    }
+
+    function submitQ1() {
+      if (q1Selected === null) return;
+      var fb = document.getElementById('q1Feedback');
+      fb.style.display = 'block';
+      if (q1Selected === Q1_CORRECT_COUNT) {
+        fb.className = 'quiz-feedback correct';
+        fb.innerHTML = '<b>✓ Correct!</b> There are 5 eggs in the nest. Two were ' +
+          'hidden directly behind the biggest egg in the front X-ray view, only ' +
+          'revealed by scrubbing through the slices. On to <b>Question 2</b>.';
+        q1Done = true;
+        document.getElementById('q1Submit').disabled = true;
+        var tags = document.querySelectorAll('#q1Tags .quiz-tag');
+        for (var i = 0; i < tags.length; i++) tags[i].disabled = true;
+        // Reveal Q2 after a short pause so the user notices the transition
+        setTimeout(function() {
+          var q2 = document.getElementById('q2Section');
+          q2.style.display = 'block';
+          q2.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 600);
+      } else {
+        fb.className = 'quiz-feedback wrong';
+        fb.innerHTML = '<b>✗ Not quite.</b> Switch to the <b>coronal</b> view and ' +
+          'scrub the slice slider — eggs at different Z depths show up only at ' +
+          'their own slice. The <b>sagittal</b> view through x = 78 also reveals ' +
+          'eggs lined up along Z. Try again.';
+      }
+    }
+
+    // ── Q2 wiring ──
+    function buildQ2Tags() {
+      // Shuffle so the answer isn't trivially in display order
+      var shuffled = Q2_OBJECTS.slice();
+      for (var i = shuffled.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
+      }
+      var container = document.getElementById('q2Tags');
+      container.innerHTML = '';
+      shuffled.forEach(function(label) {
+        var btn = document.createElement('button');
+        btn.className = 'quiz-tag';
+        btn.textContent = label;
+        btn.setAttribute('data-label', label);
+        btn.addEventListener('click', function() { onQ2Click(label, btn); });
+        container.appendChild(btn);
+      });
+    }
+
+    function onQ2Click(label, btn) {
+      if (q2Done) return;
+      // Place into next empty slot
+      for (var i = 0; i < q2State.length; i++) {
+        if (q2State[i] === null) {
+          q2State[i] = label;
+          btn.disabled = true;
+          renderQ2Slots();
+          updateQ2Submit();
+          return;
+        }
+      }
+    }
+
+    function renderQ2Slots() {
+      var slots = document.querySelectorAll('#q2Slots .quiz-slot');
+      for (var i = 0; i < slots.length; i++) {
+        var label = q2State[i];
+        var hint = (i === 0) ? 'FRONT' : (i === 3 ? 'BACK' : '');
+        if (label) {
+          slots[i].classList.add('filled');
+          slots[i].innerHTML = (hint ? '<span class="quiz-slot-num">' + hint + '</span>' : '') + label;
+        } else {
+          slots[i].classList.remove('filled');
+          slots[i].innerHTML = (hint ? '<span class="quiz-slot-num">' + hint + '</span>' : '');
+        }
+      }
+    }
+
+    function updateQ2Submit() {
+      var allFilled = q2State.every(function(s){ return s !== null; });
+      document.getElementById('q2Submit').disabled = !allFilled;
+    }
+
+    function resetQ2() {
+      q2State = [null, null, null, null];
+      q2Done = false;
+      var tags = document.querySelectorAll('#q2Tags .quiz-tag');
+      for (var i = 0; i < tags.length; i++) tags[i].disabled = false;
+      renderQ2Slots();
+      updateQ2Submit();
+      var fb = document.getElementById('q2Feedback');
+      fb.style.display = 'none';
+      fb.className = 'quiz-feedback';
+    }
+
+    function submitQ2() {
+      var correct = q2State.every(function(label, i) { return label === Q2_CORRECT[i]; });
+      var fb = document.getElementById('q2Feedback');
+      fb.style.display = 'block';
+      if (correct) {
+        fb.className = 'quiz-feedback correct';
+        fb.innerHTML = '<b>✓ Module complete!</b> You found every hidden object AND ' +
+          'placed each at its real depth: kite in front of the canopy, coin tucked ' +
+          'inside, nest in the middle, squirrel in the back. That&rsquo;s exactly how ' +
+          'a radiologist uses CT and MPR reformats to localize findings in three ' +
+          'dimensions.';
+        q2Done = true;
+        document.getElementById('q2Submit').disabled = true;
+        var tags = document.querySelectorAll('#q2Tags .quiz-tag');
+        for (var i = 0; i < tags.length; i++) tags[i].disabled = true;
+      } else {
+        fb.className = 'quiz-feedback wrong';
+        fb.innerHTML = '<b>✗ Not quite.</b> Each object appears at its own depth in ' +
+          'the coronal view — scrub through z to confirm each one. Try again.';
+      }
+    }
+
+    function selectPlane(btn) {
+      if (btn.classList.contains('locked')) return;
+      var tabs = document.querySelectorAll('.plane-tab');
+      for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+      btn.classList.add('active');
+      plane = btn.getAttribute('data-plane');
+      sliceIdx = planeDefaults[plane];
+      var idxSlider = document.getElementById('idxSlider');
+      idxSlider.max = planeMax[plane];
+      idxSlider.value = sliceIdx;
+      renderSliceCanvas();
+    }
+
+    function updateVal(type) {
+      if (type === 'thick') {
+        document.getElementById('thickValue').textContent =
+          document.getElementById('thickSlider').value + ' mm';
+      } else if (type === 'speed') {
+        var v = parseInt(document.getElementById('speedSlider').value);
+        var labels = ['', 'Slow', 'Medium', 'Fast'];
+        document.getElementById('speedValue').textContent = labels[v];
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  Init
+    // ═══════════════════════════════════════════════════════════════════
+    (function init() {
+      updatePhaseUI();
+      renderTopViewport('green');
+
+      // Wire plane tab clicks
+      var tabs = document.querySelectorAll('.plane-tab');
+      for (var i = 0; i < tabs.length; i++) {
+        (function(btn){ btn.addEventListener('click', function(){ selectPlane(btn); }); })(tabs[i]);
+      }
+      // Wire slice position slider
+      document.getElementById('idxSlider').addEventListener('input', function(e) {
+        sliceIdx = parseInt(e.target.value);
+        renderSliceCanvas();
+      });
+      // Wire quiz buttons (Q1 + Q2)
+      document.getElementById('q1Reset').addEventListener('click', resetQ1);
+      document.getElementById('q1Submit').addEventListener('click', submitQ1);
+      document.getElementById('q2Reset').addEventListener('click', resetQ2);
+      document.getElementById('q2Submit').addEventListener('click', submitQ2);
+    })();
+  </script>
+
+  <div class="hu-popup-overlay" id="huPopup" onclick="if(event.target===this)this.classList.remove('visible')">
+    <div class="hu-popup">
+      <button type="button" class="hu-popup-close" aria-label="Close" onclick="document.getElementById('huPopup').classList.remove('visible')">&times;</button>
+      <h4>Hounsfield Unit Scale</h4>
+      <p>The CT scanner does not just see shapes. It also measures how strongly each part blocks X-rays. That measurement becomes a Hounsfield Unit. Then the computer turns HU numbers into grayscale: low numbers look dark, high numbers look bright. That helps us tell if the hidden object is more like air, water, soft tissue, bone, or metal.</p>
+    </div>
+  </div>
+
+</body>
+</html>

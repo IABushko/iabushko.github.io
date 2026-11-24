@@ -1,0 +1,2305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab Detective Notebook – LearnWithMD</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="../state.js"></script>
+  <script src="../mls-lab-data.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Special+Elite&family=Walter+Turncoat&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #5a4232;
+      font-family: "Inter", system-ui, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Top Bar ── */
+    .lab-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: rgba(58,42,28,0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .lab-back {
+      color: #d4b896;
+      font-size: 0.85rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .lab-back:hover { color: #fff; }
+    .lab-case-tag {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: #d4b896;
+    }
+    .lab-avatar-sm {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #e74c3c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* ── Notebook Container ── */
+    .notebook-outer {
+      max-width: 1080px;
+      margin: 24px auto;
+      padding: 0 16px 48px;
+      position: relative;
+    }
+
+    /* ── Index Tabs (top of notebook, above left page) ── */
+    .index-tabs {
+      display: flex;
+      align-items: flex-end;
+      padding-left: 14px;
+      margin-bottom: -2px;
+      position: relative;
+      z-index: 2;
+      max-width: 50%;    /* keep above left page only */
+    }
+
+    /* Green case tab */
+    .idx-tab-case {
+      padding: 7px 14px 9px;
+      border-radius: 8px 8px 0 0;
+      font-family: 'Special Elite', monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      border: none;
+      cursor: default;
+      background: #4a8c6a;
+      color: #e8f5e9;
+      white-space: nowrap;
+      position: relative;
+      top: 2px;
+      flex-shrink: 0;
+      margin-right: 4px;
+    }
+
+    /* Blue step tabs — horizontal, partially overlapping */
+    .step-tabs-stack {
+      display: flex;
+      align-items: flex-end;
+      position: relative;
+    }
+    .idx-tab {
+      font-family: 'Special Elite', monospace;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      border: none;
+      cursor: pointer;
+      background: #4a7a9c;
+      color: #e3f2fd;
+      border-radius: 8px 8px 0 0;
+      white-space: nowrap;
+      position: relative;
+      top: 2px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Collapsed (number-only) tab — opaque, stacked/piled look */
+    .idx-tab.collapsed {
+      width: 32px;
+      height: 30px;
+      padding: 0;
+      font-size: 0.72rem;
+      margin-left: -4px;     /* overlap but still show number */
+      opacity: 1;
+      background: #5a8aaa;
+      border-right: 1.5px solid rgba(0,0,0,0.15);
+      box-shadow:
+        3px 0 4px rgba(0,0,0,0.25),       /* right-edge depth */
+        1px -1px 2px rgba(0,0,0,0.12),     /* top-right lift */
+        -1px 0 1px rgba(0,0,0,0.06),       /* subtle left edge */
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        inset -2px 0 3px rgba(0,0,0,0.08); /* inner right darken */
+    }
+    .idx-tab.collapsed:hover {
+      transform: translateY(-3px);
+      box-shadow:
+        4px 1px 8px rgba(0,0,0,0.3),
+        1px -2px 4px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    .idx-tab.collapsed .tab-label { display: none; }
+
+    /* Expanded (active) tab — shows full text, taller & frontmost */
+    .idx-tab.expanded {
+      padding: 8px 14px 9px 10px;
+      font-size: 0.78rem;
+      margin-left: -4px;
+      opacity: 1;
+      height: 34px;
+      background: #4a7a9c;
+      box-shadow:
+        3px 0 6px rgba(0,0,0,0.2),
+        -2px -2px 5px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+    .idx-tab.expanded .tab-num {
+      margin-right: 2px;
+    }
+    /* First tab no negative margin */
+    .idx-tab:first-child {
+      margin-left: 0;
+    }
+
+    /* Locked state — still opaque but muted, keeps piled feel */
+    .idx-tab.locked {
+      opacity: 1;
+      cursor: not-allowed;
+      background: #8aa8b8;
+      color: #c8dce6;
+      border-right: 1.5px solid rgba(0,0,0,0.1);
+      box-shadow:
+        3px 0 3px rgba(0,0,0,0.15),
+        1px -1px 2px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        inset -2px 0 3px rgba(0,0,0,0.05);
+    }
+    .idx-tab.locked:hover {
+      transform: none;
+    }
+
+    /* Completed dot */
+    .tab-done-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #a5d6a7;
+      margin-left: 5px;
+      flex-shrink: 0;
+      display: none;
+    }
+    .idx-tab.done .tab-done-dot { display: block; }
+
+    /* ── Manila Folder / Notebook Binder ── */
+    .notebook-binder {
+      background: linear-gradient(180deg, #d5c4a1 0%, #c8b48a 30%, #bfa878 100%);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow:
+        0 12px 48px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        inset 0 -2px 0 rgba(0,0,0,0.1);
+      position: relative;
+      perspective: 1800px;
+      overflow: visible;
+    }
+    /* Folder edge detail */
+    .notebook-binder::before {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border: 1.5px solid rgba(139,109,71,0.25);
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    /* ── Book Spread (two pages) ── */
+    .book-spread {
+      display: grid;
+      grid-template-columns: 1fr 4px 1fr;
+      min-height: 560px;
+      border-radius: 6px;
+      overflow: visible;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    /* ── Pink Hint Tab (right edge of right page) ── */
+    .hint-tab {
+      position: absolute;
+      right: -38px;
+      top: 24px;
+      width: 38px;
+      height: 54px;
+      background: linear-gradient(135deg, #f48fb1 0%, #e91e90 100%);
+      border-radius: 0 10px 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      cursor: pointer;
+      box-shadow:
+        3px 2px 8px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.3);
+      z-index: 10;
+      transition: all 0.25s ease;
+      border: none;
+      padding: 0;
+    }
+    .hint-tab:hover {
+      right: -42px;
+      width: 42px;
+      background: linear-gradient(135deg, #f06292 0%, #d81b60 100%);
+      box-shadow:
+        4px 3px 12px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.35);
+    }
+
+    /* Hint tooltip bubble */
+    .hint-bubble {
+      position: absolute;
+      right: 48px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #fdf8e8;
+      color: #5a4232;
+      font-family: 'Walter Turncoat', cursive;
+      font-size: 0.92rem;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 12px;
+      white-space: nowrap;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+      border: 1.5px solid #e8dfc0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      transform: translateY(-50%) translateX(6px);
+    }
+    /* Speech bubble arrow pointing right */
+    .hint-bubble::after {
+      content: "";
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      border-left: 8px solid #fdf8e8;
+      filter: drop-shadow(1px 0 1px rgba(0,0,0,0.08));
+    }
+    .hint-tab:hover .hint-bubble {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+
+    /* ── Hint Image Overlay ── */
+    .hint-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      background: rgba(30, 25, 18, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .hint-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .hint-overlay img {
+      max-width: 92%;
+      max-height: 90%;
+      border-radius: 10px;
+    }
+
+    /* ── Center Spine ── */
+    .book-spine {
+      background: linear-gradient(180deg, #a0896e, #8b7355);
+      position: relative;
+      box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    }
+
+    /* ── Left Page ── */
+    .page-left {
+      background: #fefcf8;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: transform 0.6s ease;
+    }
+    .page-left::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 30px;
+      background: linear-gradient(90deg, transparent, rgba(0,0,0,0.04));
+      pointer-events: none;
+    }
+    .left-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      gap: 16px;
+    }
+    .left-content img {
+      max-width: 92%;
+      max-height: 70%;
+      object-fit: contain;
+      border-radius: 6px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    .left-content video {
+      max-width: 92%;
+      max-height: 70%;
+      border-radius: 6px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    .left-label {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.7rem;
+      color: #a09480;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .left-explanation {
+      background: rgba(74,122,156,0.06);
+      border-left: 3px solid #4a7a9c;
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+      margin: 0 16px;
+      font-size: 0.82rem;
+      color: #3b2d1f;
+      line-height: 1.65;
+      width: calc(100% - 48px);
+    }
+    .left-explanation strong { color: #4a7a9c; }
+    .left-explanation .purple { color: #5a0080; font-weight: 700; }
+    .left-explanation .pink { color: #e65f9a; font-weight: 700; }
+
+    /* Multi-plate culture display (stacked vertically) */
+    .plate-row {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+      max-width: 92%;
+      align-items: center;
+    }
+    .plate-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      max-width: 240px;
+    }
+    .plate-card img {
+      width: 100%;
+      max-height: 200px;
+      object-fit: contain;
+      border-radius: 6px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    .plate-caption {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.65rem;
+      color: #a09480;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-align: center;
+    }
+
+    /* ── Right Page ── */
+    .page-right {
+      background: linear-gradient(225deg, #fdf6e3 0%, #f8f0de 50%, #f3e9d2 100%);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: visible;
+    }
+    .page-right::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 30px;
+      background: linear-gradient(270deg, transparent, rgba(0,0,0,0.04));
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Red margin line */
+    .page-right::after {
+      content: "";
+      position: absolute;
+      left: 36px;
+      top: 0;
+      bottom: 0;
+      width: 1.5px;
+      background: #e8998d55;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px 24px 48px;
+      background: repeating-linear-gradient(
+        to bottom, transparent 0px, transparent 27px,
+        #e8998d1a 27px, #e8998d1a 28px
+      );
+      background-position: 0 2px;
+      position: relative;
+      z-index: 2;
+    }
+    .content-area::-webkit-scrollbar { width: 4px; }
+    .content-area::-webkit-scrollbar-thumb { background: #d4c09a; border-radius: 2px; }
+
+    /* Page curl corner */
+    .page-curl {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, transparent 50%, #e8dcc6 50%, #ded2bb 100%);
+      box-shadow: -2px -2px 4px rgba(0,0,0,0.04);
+      z-index: 5;
+    }
+
+    /* ── Earned-sticker stack (top-right corner of right page) ── */
+    .page-stickers {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 4px;
+      max-width: 55%;
+      z-index: 6;
+      pointer-events: none;
+    }
+    .page-sticker {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      animation: stickerPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .page-sticker:nth-child(odd)  { transform: rotate(-5deg); }
+    .page-sticker:nth-child(even) { transform: rotate(4deg); }
+    .page-sticker img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+    .page-sticker.locked img {
+      filter: grayscale(1) opacity(0.45) drop-shadow(0 1px 2px rgba(0,0,0,0.12));
+    }
+    @keyframes stickerPop {
+      0%   { transform: scale(0) rotate(0deg);   opacity: 0; }
+      60%  { transform: scale(1.2) rotate(8deg); opacity: 1; }
+      100% { opacity: 1; }
+    }
+
+    /* ── Page Navigation ── */
+    .page-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 28px 8px 48px;
+      border-top: 1px dashed #d4c09a;
+      background: rgba(253,246,227,0.7);
+      flex-shrink: 0;
+    }
+    .page-nav-btn {
+      padding: 8px 18px;
+      border: 1.5px solid #d4c09a;
+      border-radius: 5px;
+      background: transparent;
+      color: #5c4a2f;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      font-family: "Inter", system-ui, sans-serif;
+    }
+    .page-nav-btn:hover:not(:disabled) { background: rgba(0,0,0,0.04); transform: translateY(-1px); }
+    .page-nav-btn:disabled { opacity: 0.25; cursor: default; }
+    .page-nav-btn.btn-next {
+      background: #4a7a9c;
+      color: #fff;
+      border-color: #4a7a9c;
+    }
+    .page-nav-btn.btn-next:hover:not(:disabled) { background: #3a6a8c; }
+    .page-counter {
+      font-size: 0.72rem;
+      color: #9a8b70;
+      font-weight: 600;
+    }
+
+    /* ═══ Book Page Flip Animation ═══ */
+
+    /* Flip overlay — the "turning page" */
+    .flip-page {
+      position: absolute;
+      top: 0;
+      width: 50%;
+      height: 100%;
+      z-index: 20;
+      pointer-events: none;
+      transform-style: preserve-3d;
+    }
+    /* Front face of the turning page */
+    .flip-page .flip-front,
+    .flip-page .flip-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 4px;
+    }
+    .flip-page .flip-front {
+      background: linear-gradient(225deg, #fdf6e3, #f8f0de, #f3e9d2);
+    }
+    .flip-page .flip-back {
+      background: linear-gradient(135deg, #fefcf8, #f8f4ee);
+      transform: rotateY(180deg);
+    }
+
+    /* Shadow that follows the flip */
+    .flip-shadow {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 40px;
+      z-index: 19;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    /* Forward flip: right page turns left (hinged at spine = left edge of right page) */
+    .flip-page.flip-forward {
+      right: 0;
+      left: auto;
+      transform-origin: left center;
+      animation: pageFlipForward 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    .flip-page.flip-forward .flip-shadow-inner {
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 100%;
+      width: 60px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.15), transparent);
+      animation: flipShadowForward 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes pageFlipForward {
+      0%   { transform: rotateY(0deg); }
+      30%  { transform: rotateY(-40deg); }
+      50%  { transform: rotateY(-90deg); }
+      70%  { transform: rotateY(-135deg); }
+      100% { transform: rotateY(-180deg); }
+    }
+    @keyframes flipShadowForward {
+      0%   { opacity: 0; width: 0; }
+      30%  { opacity: 0.7; width: 80px; }
+      50%  { opacity: 1; width: 100px; }
+      70%  { opacity: 0.6; width: 60px; }
+      100% { opacity: 0; width: 0; }
+    }
+
+    /* Backward flip: left page turns right (hinged at spine = right edge of left page) */
+    .flip-page.flip-backward {
+      left: 0;
+      right: auto;
+      transform-origin: right center;
+      animation: pageFlipBackward 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    .flip-page.flip-backward .flip-shadow-inner {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 60px;
+      background: linear-gradient(270deg, rgba(0,0,0,0.15), transparent);
+      animation: flipShadowBackward 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes pageFlipBackward {
+      0%   { transform: rotateY(0deg); }
+      30%  { transform: rotateY(40deg); }
+      50%  { transform: rotateY(90deg); }
+      70%  { transform: rotateY(135deg); }
+      100% { transform: rotateY(180deg); }
+    }
+    @keyframes flipShadowBackward {
+      0%   { opacity: 0; width: 0; }
+      30%  { opacity: 0.7; width: 80px; }
+      50%  { opacity: 1; width: 100px; }
+      70%  { opacity: 0.6; width: 60px; }
+      100% { opacity: 0; width: 0; }
+    }
+
+    /* Soft shadow cast onto the page beneath during flip */
+    .book-spread .page-shadow-overlay {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      z-index: 15;
+      pointer-events: none;
+    }
+    .page-shadow-overlay.shadow-right {
+      left: 50%;
+      width: 50%;
+      background: linear-gradient(90deg, rgba(0,0,0,0.12), transparent 60%);
+      animation: shadowFadeIn 0.35s ease forwards, shadowFadeOut 0.35s 0.35s ease forwards;
+    }
+    .page-shadow-overlay.shadow-left {
+      left: 0;
+      width: 50%;
+      background: linear-gradient(270deg, rgba(0,0,0,0.12), transparent 60%);
+      animation: shadowFadeIn 0.35s ease forwards, shadowFadeOut 0.35s 0.35s ease forwards;
+    }
+    @keyframes shadowFadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    @keyframes shadowFadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* ═══ Right Page Content Styling ═══ */
+    .nb-title {
+      font-family: 'Special Elite', monospace;
+      font-size: 1.15rem;
+      color: #3b2d1f;
+      margin: 0 0 4px;
+    }
+    .nb-subtitle {
+      font-size: 0.8rem;
+      color: #9a8b70;
+      margin: 0 0 18px;
+      font-style: italic;
+    }
+    .nb-prompt {
+      font-family: 'Walter Turncoat';
+      font-size: 1.5rem;
+      color: #c0392b;
+      margin: 0 0 14px;
+      font-weight: 700;
+    }
+
+    /* ── Drag & Drop Fill-in-the-Blank (Page 1) ── */
+    .fill-template {
+      margin-bottom: 20px;
+    }
+    .fill-line {
+      font-size: 0.88rem;
+      color: #3b2d1f;
+      line-height: 2.4;
+      margin-bottom: 6px;
+    }
+    .fill-blank {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 110px;
+      height: 30px;
+      vertical-align: middle;
+      margin: 0 2px;
+      border: 2px dashed #c0392b88;
+      border-radius: 6px;
+      background: rgba(192,57,43,0.04);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #c0392b;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      cursor: default;
+      padding: 0 8px;
+    }
+    .fill-blank.drag-over {
+      border-color: #4a7a9c;
+      background: rgba(74,122,156,0.1);
+      transform: scale(1.03);
+    }
+    .fill-blank.filled {
+      border: 2px solid #27ae60;
+      background: rgba(39,174,96,0.08);
+      color: #1b5e20;
+      cursor: grab;
+    }
+    .fill-blank.wrong-fill {
+      border-color: #e74c3c;
+      background: rgba(231,76,60,0.08);
+      animation: blankShake 0.4s ease;
+    }
+    @keyframes blankShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-4px); }
+      40% { transform: translateX(4px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+    }
+
+    /* Word Pool */
+    .word-pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 12px;
+      background: rgba(0,0,0,0.02);
+      border: 1px solid #e0d6c8;
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+    .word-pool-label {
+      width: 100%;
+      font-family: 'Special Elite', monospace;
+      font-size: 0.7rem;
+      color: #9a8b70;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    .word-chip {
+      padding: 5px 12px;
+      background: #fff;
+      border: 1.5px solid #d4c09a;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #5c4a2f;
+      cursor: grab;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+      user-select: none;
+    }
+    .word-chip:hover { transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
+    .word-chip.dragging { opacity: 0.4; transform: scale(0.95); }
+    .word-chip.used { opacity: 0.3; pointer-events: none; text-decoration: line-through; }
+
+    /* ── Selection Options (Pages 2-4) ── */
+    .select-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .select-opt {
+      padding: 12px 18px;
+      border: 2px solid #e0d6c8;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.5);
+      cursor: pointer;
+      font-size: 0.88rem;
+      color: #3b2d1f;
+      font-weight: 600;
+      text-align: left;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      font-family: "Inter", system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .select-opt:hover:not(:disabled):not(.correct):not(.wrong) {
+      border-color: #4a7a9c;
+      background: rgba(74,122,156,0.06);
+      transform: translateX(4px);
+    }
+    .select-opt:disabled { cursor: default; }
+    .select-opt .opt-indicator {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #d4c09a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.7rem;
+      font-weight: 800;
+      transition: all 0.2s;
+    }
+    .select-opt.correct {
+      border-color: #27ae60;
+      background: rgba(39,174,96,0.08);
+      color: #1b5e20;
+    }
+    .select-opt.correct .opt-indicator {
+      border-color: #27ae60;
+      background: #27ae60;
+      color: #fff;
+    }
+    .select-opt.wrong {
+      border-color: #e74c3c;
+      background: rgba(231,76,60,0.06);
+      color: #b71c1c;
+      animation: optShake 0.4s ease;
+    }
+    .select-opt.wrong .opt-indicator {
+      border-color: #e74c3c;
+      background: #e74c3c;
+      color: #fff;
+    }
+    @keyframes optShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-5px); }
+      40% { transform: translateX(5px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+    }
+
+    /* +/- Toggle Buttons */
+    .toggle-btns {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .toggle-btn {
+      flex: 1;
+      padding: 18px;
+      border: 3px solid #e0d6c8;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.5);
+      cursor: pointer;
+      font-size: 2rem;
+      font-weight: 800;
+      text-align: center;
+      transition: all 0.2s;
+      font-family: "Inter", system-ui, sans-serif;
+      color: #5c4a2f;
+    }
+    .toggle-btn:hover:not(:disabled):not(.correct):not(.wrong) {
+      border-color: #4a7a9c;
+      background: rgba(74,122,156,0.06);
+      transform: scale(1.04);
+    }
+    .toggle-btn:disabled { cursor: default; }
+    .toggle-btn.correct {
+      border-color: #27ae60;
+      background: rgba(39,174,96,0.1);
+      color: #27ae60;
+      box-shadow: 0 0 20px rgba(39,174,96,0.15);
+    }
+    .toggle-btn.wrong {
+      border-color: #e74c3c;
+      background: rgba(231,76,60,0.06);
+      color: #e74c3c;
+      animation: optShake 0.4s ease;
+    }
+
+    /* Image-card choices (e.g., Large vs Small colony) */
+    .image-choices {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 16px;
+      justify-content: center;
+    }
+    .image-choice {
+      flex: 1;
+      max-width: 180px;
+      padding: 10px;
+      border: 3px solid #e0d6c8;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.5);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      font-family: "Inter", system-ui, sans-serif;
+    }
+    .image-choice:hover:not(:disabled):not(.correct):not(.wrong) {
+      border-color: #4a7a9c;
+      background: rgba(74,122,156,0.06);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+    .image-choice:disabled { cursor: default; }
+    .image-choice .ic-img-mask {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f3e9d2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .image-choice .ic-img-mask img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .image-choice .ic-label {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #5c4a2f;
+      letter-spacing: 0.04em;
+    }
+    .image-choice.correct {
+      border-color: #27ae60;
+      background: rgba(39,174,96,0.1);
+      box-shadow: 0 0 20px rgba(39,174,96,0.15);
+    }
+    .image-choice.correct .ic-label { color: #1b5e20; }
+    .image-choice.wrong {
+      border-color: #e74c3c;
+      background: rgba(231,76,60,0.06);
+      animation: optShake 0.4s ease;
+    }
+    .image-choice.wrong .ic-label { color: #b71c1c; }
+
+    /* Feedback inline */
+    .feedback-msg {
+      display: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .feedback-msg.show { display: block; }
+    .feedback-msg.fb-ok {
+      background: rgba(39,174,96,0.08);
+      border: 1px solid rgba(39,174,96,0.2);
+      color: #1b5e20;
+    }
+    .feedback-msg.fb-no {
+      background: rgba(231,76,60,0.06);
+      border: 1px solid rgba(231,76,60,0.15);
+      color: #b71c1c;
+    }
+
+    /* Sub-step indicator */
+    .substep-indicator {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .substep-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #d4c09a;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .substep-dot.active { background: #4a7a9c; transform: scale(1.3); }
+    .substep-dot.done { background: #27ae60; }
+
+    /* ═══ Summary Page (Page 5) ═══ */
+    /* Badge collection on left */
+    .badge-collection {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 20px;
+      width: 100%;
+      max-width: 320px;
+    }
+    .badge-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .badge-item:hover { transform: scale(1.05); }
+    .badge-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      transition: all 0.3s;
+    }
+    .badge-circle.earned {
+      background: linear-gradient(135deg, #FFA737, #ffcc66);
+      box-shadow: 0 3px 12px rgba(255,167,55,0.35);
+    }
+    .badge-circle.empty {
+      background: #f0ebe0;
+      border: 2px dashed #c0b89a;
+      font-size: 1rem;
+      color: #c0b89a;
+    }
+    .badge-name {
+      font-family: 'Caveat', cursive;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #5c4a2f;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .badge-name.empty-name { color: #bbb; }
+
+    /* ═══ Sticker Trail for Summary Left Page ═══ */
+    .sticker-trail {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 560px;
+    }
+    .trail-patient {
+      position: absolute;
+      z-index: 2;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fff5e0, #ffe0a0);
+      border: 3px solid #ffa737;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      line-height: 1;
+      box-shadow: 0 2px 8px rgba(255,167,55,0.3);
+    }
+    .trail-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .trail-node {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 1;
+    }
+    .trail-node-sticker {
+      width: 180px;
+      height: 180px;
+      flex-shrink: 0;
+      position: relative;
+      display: inline-block;
+    }
+    .trail-node-sticker img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 8px rgba(0,0,0,0.15));
+      border-radius: 0;
+      box-shadow: none;
+      max-width: none;
+      max-height: none;
+    }
+    .trail-node-sticker .shimmer-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255,255,255,0.45) 45%,
+        rgba(255,255,255,0.65) 50%,
+        rgba(255,255,255,0.45) 55%,
+        transparent 70%
+      );
+      background-size: 250% 100%;
+      animation: shimmerSlide 2.5s ease-in-out infinite;
+      pointer-events: none;
+      -webkit-mask-image: var(--sticker-src);
+      mask-image: var(--sticker-src);
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+    }
+    .trail-node-sticker.locked img {
+      filter: grayscale(1) opacity(1) drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+    .trail-node-sticker.locked .shimmer-overlay {
+      display: none;
+    }
+    .trail-node-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Special Elite', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #3b2d1f;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    .trail-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #4caf50;
+      flex-shrink: 0;
+    }
+    .trail-dot.empty {
+      background: #d4c9b8;
+      border: 2px dashed #b8a990;
+    }
+
+    /* Shimmer effect for bacteria image — masked to PNG silhouette */
+    .shimmer-card {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+    .shimmer-card img {
+      display: block;
+      max-width: 200px;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.25));
+    }
+    .shimmer-card .shimmer-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255,255,255,0.45) 45%,
+        rgba(255,255,255,0.65) 50%,
+        rgba(255,255,255,0.45) 55%,
+        transparent 70%
+      );
+      background-size: 250% 100%;
+      animation: shimmerSlide 2.5s ease-in-out infinite;
+      pointer-events: none;
+      -webkit-mask-image: var(--sticker-src);
+      mask-image: var(--sticker-src);
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+    }
+    @keyframes shimmerSlide {
+      0%   { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+
+    /* Complete stamp */
+    .complete-stamp {
+      font-family: 'Special Elite', monospace;
+      font-size: 1.6rem;
+      color: #27ae60;
+      border: 3px solid #27ae60;
+      display: inline-block;
+      padding: 6px 18px;
+      transform: rotate(-5deg);
+      margin-bottom: 12px;
+      letter-spacing: 0.06em;
+    }
+
+    /* Did You Know box */
+    .dyk-box {
+      background: rgba(52,152,219,0.06);
+      border-left: 3px solid #3498db;
+      border-radius: 0 8px 8px 0;
+      padding: 14px 16px;
+      margin-top: 16px;
+    }
+    .dyk-box h4 {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.8rem;
+      color: #3498db;
+      margin: 0 0 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .dyk-box p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #3b2d1f;
+      line-height: 1.65;
+    }
+
+    /* Check/verify button */
+    .check-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 20px;
+      background: #4a7a9c;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      margin-top: 8px;
+      font-family: "Inter", system-ui, sans-serif;
+    }
+    .check-btn:hover { background: #3a6a8c; transform: translateY(-1px); }
+    .check-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+    .check-btn.btn-success {
+      background: #27ae60;
+    }
+    .check-btn.btn-success:hover { background: #219653; }
+
+    /* ── Responsive ── */
+    @media (max-width: 760px) {
+      .book-spread {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+      .book-spine { display: none; }
+      .page-left {
+        min-height: 220px;
+        border-bottom: 2px solid #d4c09a;
+      }
+      .page-left::after { display: none; }
+      .page-right::before { display: none; }
+      .page-right::after { left: 20px; }
+      .content-area { padding: 18px 16px 18px 28px; }
+      .page-nav { padding: 8px 16px; }
+      .index-tabs { padding-left: 8px; max-width: 100%; }
+      .idx-tab.collapsed { width: 28px; height: 26px; font-size: 0.62rem; margin-left: -3px; }
+      .idx-tab.expanded { font-size: 0.68rem; padding: 6px 10px 7px 8px; height: 30px; margin-left: -3px; }
+      .idx-tab-case { font-size: 0.65rem; padding: 5px 10px 7px; }
+      .toggle-btn { font-size: 1.5rem; padding: 14px; }
+      .badge-collection { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <nav class="lab-topbar">
+    <a href="mls-case-detail.html" class="lab-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Case File
+    </a>
+    <div class="lab-case-tag">
+      <div class="lab-avatar-sm" id="labAvatar">S</div>
+      <span id="labCaseName">Stephen's Case</span>
+    </div>
+  </nav>
+
+  <!-- Notebook -->
+  <div class="notebook-outer">
+
+    <!-- Index Tabs (top of notebook, above left page) -->
+    <div class="index-tabs" id="indexTabs">
+      <div class="idx-tab-case">Case #1</div>
+      <div class="step-tabs-stack" id="stepTabsStack">
+        <!-- Populated by JS via updateTabs() -->
+      </div>
+    </div>
+
+    <div class="notebook-binder">
+      <div class="book-spread" id="bookSpread">
+
+        <!-- Left Page -->
+        <div class="page-left" id="pageLeft">
+          <div class="left-content" id="leftContent">
+            <!-- populated by JS -->
+          </div>
+        </div>
+
+        <!-- Spine -->
+        <div class="book-spine"></div>
+
+        <!-- Right Page -->
+        <div class="page-right" id="pageRight">
+          <button class="hint-tab" title="Hint">💡<span class="hint-bubble">Want to Learn More Details?</span></button>
+          <div class="page-stickers" id="pageStickers"></div>
+          <div class="content-area" id="contentArea">
+            <!-- populated by JS -->
+          </div>
+          <div class="page-nav">
+            <button class="page-nav-btn" id="prevBtn" disabled>&larr; Back</button>
+            <span class="page-counter" id="pageCounter">1 / 5</span>
+            <button class="page-nav-btn btn-next" id="nextBtn" disabled>Next &rarr;</button>
+          </div>
+          <div class="page-curl"></div>
+        </div>
+
+        <!-- Hint Image Overlay -->
+        <div class="hint-overlay" id="hintOverlay">
+          <img id="hintOverlayImg" src="" alt="Hint" />
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio (Web Audio API for feedback sounds) -->
+  <script>
+    var audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+    var correctSfx = new Audio('../Sources/mls-lab/cartoon-music-soundtrack-glock-correct-answer-504462.mp3');
+    var flipSfx = new Audio('../Sources/mls-lab/dragon-studio-flipping-book-page-499646.mp3');
+    function playDing() {
+      try {
+        correctSfx.currentTime = 0;
+        correctSfx.play();
+      } catch(e) {}
+    }
+    function playBuzz() {
+      try {
+        var ctx = getAudioCtx();
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 150;
+        osc.type = 'sawtooth';
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.25);
+      } catch(e) {}
+    }
+  </script>
+
+  <script>
+    /* ═══════════════════════════════════════
+       MLS LAB NOTEBOOK — Data-Driven Engine
+       Reads window.mlsLabData[caseId] from mls-lab-data.js
+       ═══════════════════════════════════════ */
+
+    var caseId = (typeof getCase === 'function' && getCase()) || 'stephen';
+    var caseData = (window.mlsLabData && window.mlsLabData[caseId]) || (window.mlsLabData && window.mlsLabData.stephen);
+
+    var ASSET_BASE = '../Sources/mls-lab/';
+    function asset(name) { return ASSET_BASE + name; }
+
+    // "#FCCA46" → "252,202,70" (or null if not a valid 3/6-digit hex)
+    function hexToRgb(hex) {
+      if (typeof hex !== 'string') return null;
+      var h = hex.trim().replace(/^#/, '');
+      if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+      if (!/^[0-9a-fA-F]{6}$/.test(h)) return null;
+      return parseInt(h.slice(0,2),16) + ',' + parseInt(h.slice(2,4),16) + ',' + parseInt(h.slice(4,6),16);
+    }
+
+    // Illustration emojis + character theme colors (mirrors mls-case-detail.html)
+    var illustEmojis = {
+      stephen:   "🤥",
+      colin:     "🍔",
+      lisa:      "🍦",
+      mona:      "🏊",
+      vishal:    "🏖️",
+      stephanie: "🤒",
+      coco:      "👁️"
+    };
+    var characterThemes = {
+      stephen:   "#37662D", // green
+      colin:     "#2F20F4", // saturated blue
+      lisa:      "#230C33", // purple
+      mona:      "#7CDEDC", // mint
+      vishal:    "#F17105", // orange
+      stephanie: "#FCCA46", // yellow
+      coco:      "#FFD2FC"  // pink
+    };
+
+    // Apply topbar (avatar emoji / color, case name)
+    (function applyTopbar() {
+      if (!caseData || !caseData.topbar) return;
+      var av = document.getElementById('labAvatar');
+      var nm = document.getElementById('labCaseName');
+      if (av) {
+        var emoji = illustEmojis[caseId];
+        if (emoji) {
+          av.textContent = emoji;
+          av.style.fontSize = '1rem';
+        } else {
+          av.textContent = caseData.topbar.letter || '';
+        }
+        var theme = characterThemes[caseId] || caseData.topbar.color;
+        if (theme) av.style.background = theme;
+      }
+      if (nm) nm.textContent = caseData.topbar.name || '';
+    })();
+
+    var steps = (caseData && caseData.steps) || [];
+    var totalPages = steps.length;
+    var currentPage = 0;
+    var pageUnlocked = steps.map(function(_, i) { return i === 0; });
+    var pageCompleted = steps.map(function() { return false; });
+
+    var gramSubStep = 0;
+    var gramAnswers = [null, null];
+
+    var stepResults = steps.map(function() { return null; });
+
+    // Restore prior answers if this case was already solved (Review mode).
+    // Cleared only by the "Reset Progress" button on mls.html (resetProgress).
+    var isReviewMode = false;
+    (function restoreAnswers() {
+      if (typeof isCaseComplete !== 'function' || !isCaseComplete('mls', caseId)) return;
+      if (typeof getCaseAnswers !== 'function') return;
+      var saved = getCaseAnswers('mls', caseId);
+      if (!saved) return;
+      isReviewMode = true;
+      if (Array.isArray(saved.stepResults)) {
+        saved.stepResults.forEach(function(v, i) { if (i < stepResults.length) stepResults[i] = v; });
+      }
+      if (Array.isArray(saved.gramAnswers)) {
+        saved.gramAnswers.forEach(function(v, i) { if (i < gramAnswers.length) gramAnswers[i] = v; });
+      }
+      // Always start review at the shape sub-step so the user can step through both halves
+      gramSubStep = 0;
+      // All steps freely navigable in review mode
+      for (var i = 0; i < totalPages; i++) {
+        pageUnlocked[i] = true;
+        pageCompleted[i] = true;
+      }
+    })();
+
+    function saveAnswers() {
+      if (typeof setCaseAnswers !== 'function') return;
+      setCaseAnswers('mls', caseId, {
+        stepResults: stepResults,
+        gramAnswers: gramAnswers,
+        gramSubStep: gramSubStep
+      });
+    }
+
+    /* ═══ Render dispatch ═══ */
+    function renderPage() {
+      var step = steps[currentPage];
+      if (!step) return;
+      switch (step.type) {
+        case 'cultureFill': renderCultureFill(step); break;
+        case 'gramStain':   renderGramStain(step); break;
+        case 'biochem':     renderBiochem(step, currentPage); break;
+        case 'imageChoice': renderImageChoice(step, currentPage); break;
+        case 'multiChoice': renderMultiChoice(step, currentPage); break;
+        case 'summary':     renderSummary(step); break;
+      }
+      applyHint(step);
+      updateTabs();
+      updateNav();
+      updatePageStickers();
+    }
+
+    function updatePageStickers() {
+      var container = document.getElementById('pageStickers');
+      if (!container) return;
+      var currentStep = steps[currentPage];
+      if (currentStep && currentStep.type === 'summary') {
+        container.innerHTML = '';
+        return;
+      }
+      var html = '';
+      for (var i = 0; i < steps.length; i++) {
+        if (steps[i].type === 'summary') continue;
+        var result = stepResults[i];
+        if (result === null) continue;
+        var src = steps[i].sticker;
+        if (!src) continue;
+        var cls = result ? '' : ' locked';
+        html += '<div class="page-sticker' + cls + '"><img src="' + asset(src) + '" alt="" /></div>';
+      }
+      container.innerHTML = html;
+    }
+
+    function applyHint(step) {
+      var btn = document.querySelector('.hint-tab');
+      var img = document.getElementById('hintOverlayImg');
+      var hasHint = !!step.hintImage;
+      if (btn) btn.style.visibility = hasHint ? 'visible' : 'hidden';
+      if (img) img.src = hasHint ? asset(step.hintImage) : '';
+      document.getElementById('hintOverlay').classList.remove('active');
+    }
+
+    /* ════════════ Step type: cultureFill ════════════ */
+    function renderCultureFill(step) {
+      var leftHtml = '';
+      var imgs = step.images || (step.image ? [step.image] : []);
+      if (imgs.length > 1) {
+        leftHtml += '<div class="plate-row">';
+        imgs.forEach(function(im) {
+          leftHtml +=
+            '<div class="plate-card">' +
+              '<img src="' + asset(im.src) + '" alt="' + (im.alt || '') + '" />' +
+              (im.caption ? '<span class="plate-caption">' + im.caption + '</span>' : '') +
+            '</div>';
+        });
+        leftHtml += '</div>';
+        if (step.leftLabel) leftHtml += '<span class="left-label">' + step.leftLabel + '</span>';
+      } else if (imgs.length === 1) {
+        leftHtml += '<img src="' + asset(imgs[0].src) + '" alt="' + (imgs[0].alt || '') + '" />';
+        if (step.leftLabel) leftHtml += '<span class="left-label">' + step.leftLabel + '</span>';
+      }
+      if (step.leftExplanation) leftHtml += '<div class="left-explanation">' + step.leftExplanation + '</div>';
+      document.getElementById('leftContent').innerHTML = leftHtml;
+
+      var html =
+        '<h2 class="nb-title">' + step.title + '</h2>' +
+        '<p class="nb-prompt">' + step.prompt + '</p>' +
+        '<p style="font-size:0.8rem;color:#9a8b70;margin:0 0 12px;">' + step.subPrompt + '</p>' +
+        '<div class="fill-template" id="fillTemplate">';
+
+      step.template.forEach(function(line) {
+        html += buildFillLine(line, step.answers);
+      });
+
+      html += '</div><div class="word-pool" id="wordPool"><span class="word-pool-label">Word Pool</span>';
+
+      var shuffled = step.wordPool.slice().sort(function() { return Math.random() - 0.5; });
+      shuffled.forEach(function(w) {
+        html += '<span class="word-chip" draggable="true" data-word="' + w + '">' + w + '</span>';
+      });
+
+      html += '</div>' +
+        '<div class="feedback-msg" id="cultureFb"></div>' +
+        '<button class="check-btn" id="cultureCheckBtn" onclick="checkCulture()" disabled>Submit Answers</button>';
+
+      document.getElementById('contentArea').innerHTML = html;
+      initDragDrop();
+
+      // Review mode: auto-fill blanks with the answers the user submitted.
+      // (Case is solved, so all blanks were correct at submission time.)
+      if (isReviewMode && stepResults[currentPage] === true) {
+        document.querySelectorAll('.fill-blank').forEach(function(blank) {
+          var ans = blank.dataset.answer;
+          if (!ans) return;
+          var chip = document.querySelector('.word-chip[data-word="' + ans + '"]');
+          if (chip) chip.classList.add('used');
+          blank.textContent = ans;
+          blank.dataset.currentWord = ans;
+          blank.classList.add('filled');
+          blank.style.borderColor = '#27ae60';
+          blank.style.background = 'rgba(39,174,96,0.1)';
+        });
+        var btn = document.getElementById('cultureCheckBtn');
+        if (btn) {
+          btn.textContent = 'All Correct!';
+          btn.disabled = true;
+          btn.classList.add('btn-success');
+        }
+        var fb = document.getElementById('cultureFb');
+        if (fb) {
+          fb.classList.add('show', 'fb-ok');
+          fb.innerHTML = step.okMsg || '<strong>Excellent!</strong> All correct!';
+        }
+      }
+    }
+
+    function buildFillLine(parts, answers) {
+      var html = '<div class="fill-line">';
+      parts.forEach(function(p) {
+        if (typeof p === 'number') {
+          html += '<span class="fill-blank" data-idx="' + p + '" data-answer="' + answers[p] + '"></span>';
+        } else {
+          html += '<span>' + p + '</span>';
+        }
+      });
+      html += '</div>';
+      return html;
+    }
+
+    function initDragDrop() {
+      var chips = document.querySelectorAll('.word-chip');
+      var blanks = document.querySelectorAll('.fill-blank');
+
+      chips.forEach(function(chip) {
+        chip.addEventListener('dragstart', function(e) {
+          e.dataTransfer.setData('text/plain', chip.dataset.word);
+          chip.classList.add('dragging');
+        });
+        chip.addEventListener('dragend', function() {
+          chip.classList.remove('dragging');
+        });
+        // Click-to-select fallback
+        chip.addEventListener('click', function() {
+          if (chip.classList.contains('used')) return;
+          var selected = document.querySelector('.word-chip.selected');
+          if (selected) selected.classList.remove('selected');
+          chip.classList.toggle('selected');
+        });
+      });
+
+      blanks.forEach(function(blank) {
+        blank.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          blank.classList.add('drag-over');
+        });
+        blank.addEventListener('dragleave', function() {
+          blank.classList.remove('drag-over');
+        });
+        blank.addEventListener('drop', function(e) {
+          e.preventDefault();
+          blank.classList.remove('drag-over');
+          var word = e.dataTransfer.getData('text/plain');
+          placeWord(blank, word);
+        });
+        // Click to place selected word
+        blank.addEventListener('click', function() {
+          if (blank.classList.contains('filled')) {
+            // Remove word from blank
+            removeWordFromBlank(blank);
+            return;
+          }
+          var selected = document.querySelector('.word-chip.selected');
+          if (selected) {
+            placeWord(blank, selected.dataset.word);
+            selected.classList.remove('selected');
+          }
+        });
+      });
+    }
+
+    function placeWord(blank, word) {
+      // If blank already has a word, free it first
+      if (blank.dataset.currentWord) {
+        var oldChip = document.querySelector('.word-chip[data-word="' + blank.dataset.currentWord + '"]');
+        if (oldChip) oldChip.classList.remove('used');
+      }
+
+      blank.textContent = word;
+      blank.dataset.currentWord = word;
+      blank.classList.add('filled');
+      blank.classList.remove('wrong-fill');
+
+      // Mark chip as used
+      var chip = document.querySelector('.word-chip[data-word="' + word + '"]');
+      if (chip) chip.classList.add('used');
+
+      // Check if all blanks filled
+      updateCheckButton();
+    }
+
+    function removeWordFromBlank(blank) {
+      var word = blank.dataset.currentWord;
+      if (!word) return;
+      var chip = document.querySelector('.word-chip[data-word="' + word + '"]');
+      if (chip) chip.classList.remove('used');
+      blank.textContent = '';
+      blank.dataset.currentWord = '';
+      blank.classList.remove('filled', 'wrong-fill');
+      updateCheckButton();
+    }
+
+    function updateCheckButton() {
+      var blanks = document.querySelectorAll('.fill-blank');
+      var allFilled = true;
+      blanks.forEach(function(b) {
+        if (!b.dataset.currentWord) allFilled = false;
+      });
+      var btn = document.getElementById('cultureCheckBtn');
+      if (btn) btn.disabled = !allFilled;
+    }
+
+    function checkCulture() {
+      var step = steps[currentPage];
+      var blanks = document.querySelectorAll('.fill-blank');
+      var allCorrect = true;
+      var blanksCorrect = 0;
+
+      blanks.forEach(function(blank) {
+        if (blank.dataset.currentWord === blank.dataset.answer) {
+          blank.classList.remove('wrong-fill');
+          blank.classList.add('filled');
+          blank.style.borderColor = '#27ae60';
+          blank.style.background = 'rgba(39,174,96,0.1)';
+          blanksCorrect++;
+        } else {
+          blank.classList.add('wrong-fill');
+          allCorrect = false;
+        }
+      });
+
+      var fb = document.getElementById('cultureFb');
+      fb.classList.add('show');
+
+      if (allCorrect) {
+        fb.classList.add('fb-ok');
+        fb.innerHTML = step.okMsg || '<strong>Excellent!</strong> All correct!';
+        playDing();
+        stepResults[currentPage] = true;
+        pageCompleted[currentPage] = true;
+        unlockNext();
+        var btn = document.getElementById('cultureCheckBtn');
+        btn.textContent = 'All Correct!';
+        btn.disabled = true;
+        btn.classList.add('btn-success');
+      } else {
+        fb.classList.add('fb-no');
+        fb.classList.remove('fb-ok');
+        fb.innerHTML = '<strong>Not quite.</strong> ' + blanksCorrect + '/' + blanks.length + ' correct. Click the highlighted blanks to remove and try again.';
+        playBuzz();
+        stepResults[currentPage] = false;
+      }
+      saveAnswers();
+      updatePageStickers();
+    }
+
+    /* ════════════ Step type: gramStain ════════════ */
+    function renderGramStain(step) {
+      var leftHtml = '';
+      if (step.image) leftHtml += '<img src="' + asset(step.image.src) + '" alt="' + (step.image.alt || '') + '" />';
+      if (step.leftCaption) leftHtml += '<span class="left-label">' + step.leftCaption + '</span>';
+      if (step.leftExplanation) leftHtml += '<div class="left-explanation">' + step.leftExplanation + '</div>';
+      document.getElementById('leftContent').innerHTML = leftHtml;
+
+      if (gramSubStep === 0) renderGramShape(step);
+      else renderGramType(step);
+    }
+
+    function renderGramShape(step) {
+      var html =
+        '<h2 class="nb-title">' + step.title + '</h2>' +
+        '<div class="substep-indicator">' +
+          '<div class="substep-dot active"></div>' +
+          '<div class="substep-dot"></div>' +
+        '</div>' +
+        '<p class="nb-prompt">' + step.shapePrompt + '</p>' +
+        '<div class="select-options" id="gramShapeOpts">';
+
+      var isAnswered = gramAnswers[0] !== null;
+      step.shapeOptions.forEach(function(s, i) {
+        var isCorrect = i === step.correctShapeIdx;
+        var cls = '';
+        if (isAnswered && gramAnswers[0] === i && isCorrect) cls = 'correct';
+        else if (isAnswered && gramAnswers[0] === i && !isCorrect) cls = 'wrong';
+        else if (isAnswered && isCorrect) cls = 'correct';
+
+        html += '<button class="select-opt ' + cls + '" data-idx="' + i + '"' + (isAnswered ? ' disabled' : '') + '>' +
+          '<span class="opt-indicator">' + (cls === 'correct' ? '&#10003;' : (cls === 'wrong' ? '&#10007;' : String.fromCharCode(65 + i))) + '</span>' +
+          s + '</button>';
+      });
+
+      html += '</div><div class="feedback-msg" id="gramShapeFb"></div>';
+      if (gramAnswers[0] !== null) {
+        html += '<button class="check-btn btn-success" onclick="gramSubStep=1;renderGramStain(steps[currentPage]);">Next: Gram Type &rarr;</button>';
+      }
+      document.getElementById('contentArea').innerHTML = html;
+
+      if (gramAnswers[0] === null) {
+        document.querySelectorAll('#gramShapeOpts .select-opt').forEach(function(btn) {
+          btn.onclick = function() { handleGramShape(parseInt(btn.dataset.idx)); };
+        });
+      }
+    }
+
+    function handleGramShape(idx) {
+      var step = steps[currentPage];
+      gramAnswers[0] = idx;
+      var correct = idx === step.correctShapeIdx;
+      if (correct) playDing(); else playBuzz();
+      renderGramShape(step);
+
+      var fb = document.getElementById('gramShapeFb');
+      fb.classList.add('show', correct ? 'fb-ok' : 'fb-no');
+      fb.innerHTML = correct ? step.shapeOkMsg : step.shapeNoMsg;
+      saveAnswers();
+    }
+
+    function renderGramType(step) {
+      var html =
+        '<h2 class="nb-title">' + step.title + '</h2>' +
+        '<div class="substep-indicator">' +
+          '<div class="substep-dot done"></div>' +
+          '<div class="substep-dot active"></div>' +
+        '</div>' +
+        '<p class="nb-prompt">' + step.gramTypePrompt + '</p>' +
+        '<div class="toggle-btns" id="gramTypeBtns">';
+
+      var isAnswered = gramAnswers[1] !== null;
+      var labels = ["+", "\u2212"];
+      labels.forEach(function(l, i) {
+        var isCorrect = i === step.correctGramTypeIdx;
+        var cls = '';
+        if (isAnswered && gramAnswers[1] === i && isCorrect) cls = 'correct';
+        else if (isAnswered && gramAnswers[1] === i && !isCorrect) cls = 'wrong';
+        else if (isAnswered && isCorrect) cls = 'correct';
+        html += '<button class="toggle-btn ' + cls + '" data-idx="' + i + '"' + (isAnswered ? ' disabled' : '') + '>' + l + '</button>';
+      });
+
+      html += '</div><div class="feedback-msg" id="gramTypeFb"></div>';
+      document.getElementById('contentArea').innerHTML = html;
+
+      if (gramAnswers[1] === null) {
+        document.querySelectorAll('#gramTypeBtns .toggle-btn').forEach(function(btn) {
+          btn.onclick = function() { handleGramType(parseInt(btn.dataset.idx)); };
+        });
+      }
+    }
+
+    function handleGramType(idx) {
+      var step = steps[currentPage];
+      gramAnswers[1] = idx;
+      var correct = idx === step.correctGramTypeIdx;
+      if (correct) playDing(); else playBuzz();
+
+      var bothCorrect = (gramAnswers[0] === step.correctShapeIdx) && (gramAnswers[1] === step.correctGramTypeIdx);
+      stepResults[currentPage] = bothCorrect;
+      pageCompleted[currentPage] = true;
+      unlockNext();
+
+      renderGramType(step);
+
+      var fb = document.getElementById('gramTypeFb');
+      fb.classList.add('show', correct ? 'fb-ok' : 'fb-no');
+      fb.innerHTML = correct ? step.gramTypeOkMsg : step.gramTypeNoMsg;
+      saveAnswers();
+      updatePageStickers();
+    }
+
+    /* ════════════ Step type: biochem (generic +/− toggle) ════════════ */
+    function renderBiochem(step, pageIdx) {
+      var leftHtml = '';
+      if (step.media) {
+        if (step.media.kind === 'video') {
+          leftHtml += '<video src="' + asset(step.media.src) + '" autoplay loop playsinline></video>';
+        } else {
+          leftHtml += '<img src="' + asset(step.media.src) + '" alt="' + (step.media.alt || '') + '" />';
+        }
+      }
+      if (step.leftLabel) leftHtml += '<span class="left-label">' + step.leftLabel + '</span>';
+      if (step.leftExplanation) leftHtml += '<div class="left-explanation">' + step.leftExplanation + '</div>';
+      document.getElementById('leftContent').innerHTML = leftHtml;
+
+      var isAnswered = stepResults[pageIdx] !== null;
+      var html =
+        '<h2 class="nb-title">' + step.title + '</h2>' +
+        (step.subtitle ? '<p class="nb-subtitle">' + step.subtitle + '</p>' : '') +
+        '<p class="nb-prompt">' + step.prompt + '</p>' +
+        '<div class="toggle-btns" id="biochemBtns">';
+
+      var labels = ["+", "−"];
+      var userIdx = null;
+      if (isAnswered) {
+        userIdx = stepResults[pageIdx] ? step.correctIdx : (1 - step.correctIdx);
+      }
+      labels.forEach(function(l, i) {
+        var isCorrect = i === step.correctIdx;
+        var cls = '';
+        if (isAnswered && userIdx === i && isCorrect) cls = 'correct';
+        else if (isAnswered && userIdx === i && !isCorrect) cls = 'wrong';
+        else if (isAnswered && isCorrect) cls = 'correct';
+        html += '<button class="toggle-btn ' + cls + '" data-idx="' + i + '"' + (isAnswered ? ' disabled' : '') + '>' + l + '</button>';
+      });
+
+      html += '</div><div class="feedback-msg" id="biochemFb"></div>';
+      document.getElementById('contentArea').innerHTML = html;
+
+      if (!isAnswered) {
+        document.querySelectorAll('#biochemBtns .toggle-btn').forEach(function(btn) {
+          btn.onclick = function() { handleBiochem(parseInt(btn.dataset.idx)); };
+        });
+      }
+    }
+
+    function handleBiochem(idx) {
+      var step = steps[currentPage];
+      var correct = idx === step.correctIdx;
+      stepResults[currentPage] = correct;
+      pageCompleted[currentPage] = true;
+      if (correct) playDing(); else playBuzz();
+      unlockNext();
+      renderBiochem(step, currentPage);
+
+      var fb = document.getElementById('biochemFb');
+      fb.classList.add('show', correct ? 'fb-ok' : 'fb-no');
+      fb.innerHTML = correct ? step.okMsg : step.noMsg;
+      saveAnswers();
+      updatePageStickers();
+    }
+
+    /* ════════════ Step type: imageChoice (pick one image-card) ════════════ */
+    function renderImageChoice(step, pageIdx) {
+      var leftHtml = '';
+      var imgs = step.images || (step.image ? [step.image] : []);
+      if (imgs.length > 1) {
+        leftHtml += '<div class="plate-row">';
+        imgs.forEach(function(im) {
+          leftHtml +=
+            '<div class="plate-card">' +
+              '<img src="' + asset(im.src) + '" alt="' + (im.alt || '') + '" />' +
+              (im.caption ? '<span class="plate-caption">' + im.caption + '</span>' : '') +
+            '</div>';
+        });
+        leftHtml += '</div>';
+        if (step.leftLabel) leftHtml += '<span class="left-label">' + step.leftLabel + '</span>';
+      } else if (imgs.length === 1) {
+        leftHtml += '<img src="' + asset(imgs[0].src) + '" alt="' + (imgs[0].alt || '') + '" />';
+        if (step.leftLabel) leftHtml += '<span class="left-label">' + step.leftLabel + '</span>';
+      }
+      if (step.leftExplanation) leftHtml += '<div class="left-explanation">' + step.leftExplanation + '</div>';
+      document.getElementById('leftContent').innerHTML = leftHtml;
+
+      var isAnswered = stepResults[pageIdx] !== null;
+      var userIdx = null;
+      if (isAnswered) {
+        userIdx = stepResults[pageIdx] ? step.correctIdx : (1 - step.correctIdx);
+      }
+
+      var html =
+        '<h2 class="nb-title">' + step.title + '</h2>' +
+        (step.subtitle ? '<p class="nb-subtitle">' + step.subtitle + '</p>' : '') +
+        '<p class="nb-prompt">' + step.prompt + '</p>' +
+        (step.subPrompt ? '<p style="font-size:0.8rem;color:#9a8b70;margin:0 0 12px;">' + step.subPrompt + '</p>' : '') +
+        '<div class="image-choices" id="imageChoiceBtns">';
+
+      step.choices.forEach(function(c, i) {
+        var isCorrect = i === step.correctIdx;
+        var cls = '';
+        if (isAnswered && userIdx === i && isCorrect) cls = 'correct';
+        else if (isAnswered && userIdx === i && !isCorrect) cls = 'wrong';
+        else if (isAnswered && isCorrect) cls = 'correct';
+        html +=
+          '<button class="image-choice ' + cls + '" data-idx="' + i + '"' + (isAnswered ? ' disabled' : '') + '>' +
+            '<span class="ic-img-mask"><img src="' + asset(c.src) + '" alt="' + (c.alt || c.label || '') + '" /></span>' +
+            '<span class="ic-label">' + c.label + '</span>' +
+          '</button>';
+      });
+
+      html += '</div><div class="feedback-msg" id="imageChoiceFb"></div>';
+      document.getElementById('contentArea').innerHTML = html;
+
+      if (!isAnswered) {
+        document.querySelectorAll('#imageChoiceBtns .image-choice').forEach(function(btn) {
+          btn.onclick = function() { handleImageChoice(parseInt(btn.dataset.idx)); };
+        });
+      }
+    }
+
+    function handleImageChoice(idx) {
+      var step = steps[currentPage];
+      var correct = idx === step.correctIdx;
+      stepResults[currentPage] = correct;
+      pageCompleted[currentPage] = true;
+      if (correct) playDing(); else playBuzz();
+      unlockNext();
+      renderImageChoice(step, currentPage);
+
+      var fb = document.getElementById('imageChoiceFb');
+      fb.classList.add('show', correct ? 'fb-ok' : 'fb-no');
+      fb.innerHTML = correct ? step.okMsg : step.noMsg;
+      saveAnswers();
+      updatePageStickers();
+    }
+
+    /* ════════════ Step type: multiChoice (pick one of N options) ════════════ */
+    function renderMultiChoice(step, pageIdx) {
+      var leftHtml = '';
+      if (step.media) {
+        if (step.media.kind === 'video') {
+          leftHtml += '<video src="' + asset(step.media.src) + '" autoplay loop playsinline></video>';
+        } else {
+          leftHtml += '<img src="' + asset(step.media.src) + '" alt="' + (step.media.alt || '') + '" />';
+        }
+      } else if (step.image) {
+        leftHtml += '<img src="' + asset(step.image.src) + '" alt="' + (step.image.alt || '') + '" />';
+      }
+      if (step.leftLabel) leftHtml += '<span class="left-label">' + step.leftLabel + '</span>';
+      if (step.leftExplanation) leftHtml += '<div class="left-explanation">' + step.leftExplanation + '</div>';
+      document.getElementById('leftContent').innerHTML = leftHtml;
+
+      var isAnswered = stepResults[pageIdx] !== null;
+
+      var html =
+        '<h2 class="nb-title">' + step.title + '</h2>' +
+        (step.subtitle ? '<p class="nb-subtitle">' + step.subtitle + '</p>' : '') +
+        '<p class="nb-prompt">' + step.prompt + '</p>' +
+        '<div class="select-options" id="multiChoiceOpts">';
+
+      step.options.forEach(function(opt, i) {
+        var isCorrect = i === step.correctIdx;
+        // After submission we only mark the correct option (no per-option user history).
+        var cls = (isAnswered && isCorrect) ? 'correct' : '';
+        html += '<button class="select-opt ' + cls + '" data-idx="' + i + '"' + (isAnswered ? ' disabled' : '') + '>' +
+          '<span class="opt-indicator">' + (cls === 'correct' ? '&#10003;' : String.fromCharCode(65 + i)) + '</span>' +
+          opt + '</button>';
+      });
+
+      html += '</div><div class="feedback-msg" id="multiChoiceFb"></div>';
+      document.getElementById('contentArea').innerHTML = html;
+
+      if (!isAnswered) {
+        document.querySelectorAll('#multiChoiceOpts .select-opt').forEach(function(btn) {
+          btn.onclick = function() { handleMultiChoice(parseInt(btn.dataset.idx)); };
+        });
+      }
+    }
+
+    function handleMultiChoice(idx) {
+      var step = steps[currentPage];
+      var correct = idx === step.correctIdx;
+      stepResults[currentPage] = correct;
+      pageCompleted[currentPage] = true;
+      if (correct) playDing(); else playBuzz();
+      unlockNext();
+      renderMultiChoice(step, currentPage);
+
+      var fb = document.getElementById('multiChoiceFb');
+      fb.classList.add('show', correct ? 'fb-ok' : 'fb-no');
+      fb.innerHTML = correct ? step.okMsg : step.noMsg;
+      saveAnswers();
+      updatePageStickers();
+    }
+
+    /* ════════════ Step type: summary ════════════ */
+    function renderSummary(step) {
+      markCaseComplete('mls', caseId);
+      pageCompleted[currentPage] = true;
+      saveAnswers();
+
+      // Build trail from preceding non-summary steps
+      var trailSteps = [];
+      for (var ti = 0; ti < steps.length; ti++) {
+        if (steps[ti].type === 'summary') continue;
+        trailSteps.push({
+          name: steps[ti].trailLabel || steps[ti].tabLabel || ('STEP ' + (ti + 1)),
+          img:  steps[ti].sticker,
+          earned: stepResults[ti] === true
+        });
+      }
+
+      var nodePositions = [
+        { top: '0%', right: '5%', align: 'right' },
+        { top: '21%', left: '5%',  align: 'left' },
+        { top: '43%', right: '5%', align: 'right' },
+        { top: '61%', left: '5%',  align: 'left' }
+      ];
+
+      // Serpentine path: 5 rows — patient(L) cellCulture(R) gram(L) catalase(R) staph(L)
+      // Row centers: Y = 60, 160, 260, 360, 460   R = 50
+      // Left X=114, Right X=366, edges XL=65 XR=415
+      var trackPath = 'M 50 60 L 400 60 A 50 50 0 0 1 400 200 L 75 200 A 50 50 0 0 0 75 300 L 405 300 A 50 50 0 0 1 405 420 L 75 420 A 50 50 0 0 0 75 550 L 450 550';
+
+      var themeColor = (caseData.topbar && caseData.topbar.color) || '#ffa737';
+      var themeRgb = hexToRgb(themeColor);
+      var themeShadow = themeRgb ? 'rgba(' + themeRgb + ',0.22)' : 'rgba(180,120,30,0.18)';
+      var themeBubbleShadow = themeRgb ? 'rgba(' + themeRgb + ',0.35)' : 'rgba(255,167,55,0.3)';
+      var patientStyle = 'border-color:' + themeColor + ';box-shadow:0 2px 8px ' + themeBubbleShadow + ';';
+
+      var trailHtml = '<div class="sticker-trail">' +
+        '<h2 class="nb-title" style="position:absolute;top:12px;left:16px;margin:0;font-size:1.3rem;z-index:2;">Detective Notes\uD83D\uDD0D</h2>' +
+        '<div class="trail-patient" style="top:17%;left:7%;transform:translate(-50%,-50%);' + patientStyle + '">' + (caseData.trailEmojiStart || '🤒') + '</div>' +
+        '<div class="trail-patient" style="top:90%;left:93.75%;transform:translate(-50%,-50%);' + patientStyle + '">' + (caseData.trailEmojiEnd || '🦠') + '</div>' +
+        '<svg class="trail-svg" viewBox="0 0 480 560">' +
+          '<path d="' + trackPath + '" stroke="' + themeShadow + '" stroke-width="24" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<path d="' + trackPath + '" stroke="' + themeColor + '" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<path d="' + trackPath + '" stroke="rgba(255,255,255,0.35)" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '</svg>';
+
+      trailSteps.forEach(function(t, i) {
+        var pos = nodePositions[i] || nodePositions[nodePositions.length - 1];
+        var posStyle = 'top:' + pos.top + ';' + (pos.left ? 'left:' + pos.left : 'right:' + pos.right);
+        var stickerClass = t.earned ? '' : ' locked';
+        var dotClass = t.earned ? '' : ' empty';
+        var imgPath = t.img ? asset(t.img) : '';
+        var stickerHtml = '<div class="trail-node-sticker' + stickerClass + '"' + (imgPath ? ' style="--sticker-src:url(' + imgPath + ')"' : '') + '>' +
+          (imgPath ? '<img src="' + imgPath + '" alt="' + t.name + '" />' : '') +
+          '<div class="shimmer-overlay"></div>' +
+        '</div>';
+        var labelHtml = '<div class="trail-node-label"><span class="trail-dot' + dotClass + '"></span>' + t.name + '</div>';
+
+        if (pos.align === 'left') {
+          trailHtml += '<div class="trail-node" style="' + posStyle + '">' + stickerHtml + labelHtml + '</div>';
+        } else {
+          trailHtml += '<div class="trail-node" style="' + posStyle + '">' + labelHtml + stickerHtml + '</div>';
+        }
+      });
+
+      trailHtml += '</div>';
+      document.getElementById("leftContent").innerHTML = trailHtml;
+
+      // Right page — case completed
+      var organismImg = step.organismSticker ? asset(step.organismSticker) : '';
+      var html =
+        '<div style="text-align:center;">' +
+          '<div class="complete-stamp">CASE SOLVED</div>' +
+          '<h2 class="nb-title" style="text-align:center;font-size:1.3rem;margin-bottom:4px;">Case Completed!</h2>' +
+          '<p class="nb-subtitle" style="text-align:center;">You have successfully identified the bacteria!</p>' +
+        '</div>' +
+        '<div style="text-align:center;">' +
+          (organismImg
+            ? '<div class="shimmer-card" style="--sticker-src:url(' + organismImg + ')">' +
+                '<img src="' + organismImg + '" alt="' + step.organism + '" />' +
+                '<div class="shimmer-overlay"></div>' +
+              '</div>'
+            : '') +
+          '<p style="font-family:\'Caveat\',cursive;font-size:1.3rem;color:#c0392b;margin:8px 0 4px;font-style:italic;font-weight:700;">' + step.organism + '</p>' +
+        '</div>' +
+        '<div class="dyk-box">' +
+          '<h4>Did You Know?</h4>' +
+          '<p>' + step.dyk + '</p>' +
+        '</div>' +
+        '<div style="margin-top:18px;">' +
+          '<a href="mls-investigation-board.html?closeCase=1" class="check-btn" style="background:#5c4a2f;text-decoration:none;text-align:center;display:block;">&larr; Back to Board</a>' +
+        '</div>';
+
+      document.getElementById('contentArea').innerHTML = html;
+    }
+
+    /* ═══ Navigation ═══ */
+    function unlockNext() {
+      if (currentPage < totalPages - 1) {
+        pageUnlocked[currentPage + 1] = true;
+      }
+      updateTabs();
+      updateNav();
+    }
+
+    var isFlipping = false;
+
+    function goToPage(pageIdx) {
+      if (pageIdx < 0 || pageIdx >= totalPages) return;
+      if (!pageUnlocked[pageIdx]) return;
+      if (isFlipping) return;
+      isFlipping = true;
+
+      // Close hint overlay when leaving a page
+      document.getElementById('hintOverlay').classList.remove('active');
+
+      // Play page flip sound effect
+      try { flipSfx.currentTime = 0; flipSfx.play(); } catch(e) {}
+
+      var forward = pageIdx > currentPage;
+      var spread = document.getElementById('bookSpread');
+      var flipDuration = 700; // match CSS animation
+
+      // Create the flipping page overlay
+      var flipPage = document.createElement('div');
+      flipPage.className = 'flip-page ' + (forward ? 'flip-forward' : 'flip-backward');
+
+      // Front face (current page appearance)
+      var front = document.createElement('div');
+      front.className = 'flip-front';
+      flipPage.appendChild(front);
+
+      // Back face (next page appearance)
+      var back = document.createElement('div');
+      back.className = 'flip-back';
+      flipPage.appendChild(back);
+
+      // Inner shadow on the turning page
+      var shadowInner = document.createElement('div');
+      shadowInner.className = 'flip-shadow-inner';
+      flipPage.appendChild(shadowInner);
+
+      // Shadow cast onto the underlying page
+      var shadowOverlay = document.createElement('div');
+      shadowOverlay.className = 'page-shadow-overlay ' + (forward ? 'shadow-right' : 'shadow-left');
+
+      spread.style.position = 'relative';
+      spread.appendChild(flipPage);
+      spread.appendChild(shadowOverlay);
+
+      // Swap content at the midpoint of the flip
+      setTimeout(function() {
+        currentPage = pageIdx;
+        renderPage();
+      }, flipDuration * 0.45);
+
+      // Clean up after animation ends
+      setTimeout(function() {
+        if (flipPage.parentNode) flipPage.parentNode.removeChild(flipPage);
+        if (shadowOverlay.parentNode) shadowOverlay.parentNode.removeChild(shadowOverlay);
+        isFlipping = false;
+      }, flipDuration + 50);
+    }
+
+    function updateTabs() {
+      var stack = document.getElementById('stepTabsStack');
+
+      // Case number from data
+      var caseTag = document.querySelector('.idx-tab-case');
+      if (caseTag && caseData && caseData.caseNumber) caseTag.textContent = 'Case #' + caseData.caseNumber;
+
+      var html = '';
+      for (var i = 0; i < totalPages; i++) {
+        var num = i + 1;
+        var isActive = i === currentPage;
+        var isLocked = !pageUnlocked[i];
+        var isDone = pageCompleted[i];
+        var cls = 'idx-tab' + (isActive ? ' expanded' : ' collapsed');
+        if (isLocked) cls += ' locked';
+        if (isDone) cls += ' done';
+
+        var zIdx = isActive ? 10 : (totalPages - i);
+        html += '<button class="' + cls + '" data-page="' + i + '" style="z-index:' + zIdx + '">' +
+          '<span class="tab-num">' + num + '</span>' +
+          '<span class="tab-label">' + (isActive ? '. ' + (steps[i].tabLabel || '') : '') + '</span>' +
+          '<span class="tab-done-dot"></span>' +
+        '</button>';
+      }
+      stack.innerHTML = html;
+
+      stack.querySelectorAll('.idx-tab').forEach(function(tab) {
+        var pageIdx = parseInt(tab.dataset.page);
+        if (pageUnlocked[pageIdx]) {
+          tab.onclick = function() { goToPage(pageIdx); };
+        }
+      });
+    }
+
+    function updateNav() {
+      document.getElementById('prevBtn').disabled = currentPage === 0;
+      document.getElementById('nextBtn').disabled = !pageCompleted[currentPage] || currentPage >= totalPages - 1;
+      document.getElementById('pageCounter').textContent = (currentPage + 1) + ' / ' + totalPages;
+
+      document.getElementById('prevBtn').onclick = function() {
+        if (currentPage > 0) goToPage(currentPage - 1);
+      };
+      document.getElementById('nextBtn').onclick = function() {
+        if (pageCompleted[currentPage] && currentPage < totalPages - 1) goToPage(currentPage + 1);
+      };
+    }
+
+    /* ═══ Hint Overlay Toggle ═══ */
+    document.querySelector('.hint-tab').addEventListener('click', function() {
+      var step = steps[currentPage];
+      if (!step || !step.hintImage) return;
+      document.getElementById('hintOverlay').classList.toggle('active');
+    });
+
+    /* ═══ Initialize ═══ */
+    renderPage();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shadow Splash Portrait Studio – X-ray – LearnWithMD</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="../state.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #ffffff;
+      color: #122A40;
+      font-family: "Inter", system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      font-size: 0.82rem;
+      color: #5BA9D9;
+      background: #fafafa;
+      border-bottom: 1px solid #eee;
+    }
+    .breadcrumb-bar a { color: #5BA9D9; text-decoration: none; }
+    .breadcrumb-bar a:hover { color: #122A40; }
+    .breadcrumb-bar .sep { color: #ccc; font-size: 0.7rem; }
+    .breadcrumb-bar .current { color: #122A40; font-weight: 600; }
+
+    /* ── Hero Banner ── */
+    .studio-hero {
+      background: linear-gradient(135deg, #122A40 0%, #1a3a5c 50%, #122A40 100%);
+      color: #fff;
+      padding: 40px 40px 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .studio-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(91,169,217,0.12) 0%, transparent 50%),
+        radial-gradient(circle at 80% 30%, rgba(78,116,191,0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .studio-hero h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0 0 8px;
+      position: relative;
+    }
+    .studio-hero h1 span { color: #5BA9D9; }
+    .studio-hero p {
+      font-size: 1rem;
+      color: #8bb8d9;
+      margin: 0;
+      position: relative;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(91,169,217,0.2);
+      border: 1px solid rgba(91,169,217,0.4);
+      padding: 4px 16px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #5BA9D9;
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    /* ── Learning Objectives ── */
+    .objectives-bar {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      padding: 20px 32px;
+      background: #f7fafc;
+      border-bottom: 1px solid #eee;
+      flex-wrap: wrap;
+    }
+    .obj-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: #555;
+    }
+    .obj-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #4E74BF;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ── Studio Layout ── */
+    .studio-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+    }
+
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ── Left Panel: Controls ── */
+    .controls-panel {
+      background: #f7fafc;
+      border: 1px solid #e8ecf1;
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #122A40;
+      margin: 0 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-title svg { flex-shrink: 0; }
+
+    /* Slider group */
+    .slider-group { margin-bottom: 22px; }
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .slider-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #122A40;
+    }
+    .slider-value {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #4E74BF;
+      background: #EBF4FB;
+      padding: 2px 10px;
+      border-radius: 8px;
+    }
+    .slider-analogy {
+      font-size: 0.72rem;
+      color: #888;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      background: #dde5ed;
+      border-radius: 8px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #4E74BF;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(78,116,191,0.3);
+    }
+
+    /* Fire + reset buttons */
+    .fire-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: #000;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      font-family: "Inter", system-ui, sans-serif;
+    }
+    .fire-btn:hover { background: #222; transform: translateY(-2px); }
+    .fire-btn:active { transform: translateY(0); }
+    .fire-btn.firing { background: #4E74BF; pointer-events: none; }
+    
+    
+    .saved-folder {
+      margin-top: 18px;
+      border-top: 1px solid #e8ecf1;
+      padding-top: 14px;
+    }
+    .saved-folder-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .saved-folder-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #122A40;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .saved-folder-clear {
+      font-size: 0.7rem;
+      color: #888;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+    }
+    .saved-folder-clear:hover { color: #4E74BF; }
+    .saved-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .saved-empty {
+      grid-column: 1 / -1;
+      font-size: 0.72rem;
+      color: #9aa5b3;
+      text-align: center;
+      padding: 18px 6px;
+      border: 1px dashed #d9e1ea;
+      border-radius: 8px;
+    }
+    .saved-item {
+      position: relative;
+      border: 1px solid #dde5ed;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fff;
+      cursor: pointer;
+    }
+    .saved-item img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      background: #fff;
+    }
+    .saved-item-meta {
+      font-size: 0.55rem;
+      color: #555;
+      padding: 3px 4px;
+      line-height: 1.25;
+      background: #f7fafc;
+      border-top: 1px solid #e8ecf1;
+    }
+    .saved-item-del {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      font-size: 0.7rem;
+      line-height: 14px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .saved-item-del:hover { background: #c0392b; }
+
+    /* ── Simulation row: stage + top-view ── */
+    .sim-row {
+      display: flex;
+      gap: 14px;
+      align-items: stretch;
+    }
+    .sim-row .stage { flex: 1 1 auto; min-width: 0; }
+    .sim-row .topview { flex: 0 0 170px; }
+
+    /* ── Stage (first-person POV, perspective) ── */
+    .stage {
+      position: relative;
+      background: linear-gradient(180deg, #0a1624 0%, #122A40 55%, #1a3a5c 100%);
+      border-radius: 16px;
+      height: 720px;
+      overflow: hidden;
+      border: 2px solid #1a3a5c;
+    }
+
+    /* Scene group: canvas + tree move/scale together as distance changes */
+    .scene-group {
+      position: absolute;
+      inset: 0;
+      transform-origin: 50% 55%;
+      transition: transform 0.3s ease;
+      pointer-events: none;
+    }
+    .stage-label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.4);
+      z-index: 30;
+    }
+
+    /* Back wall: white canvas (image detector) */
+    .canvas-wall {
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 340px;
+      height: 340px;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow:
+        0 0 0 3px rgba(255,255,255,0.25),
+        0 20px 60px rgba(0,0,0,0.6),
+        0 0 80px rgba(91,169,217,0.15);
+      overflow: hidden;
+      z-index: 1;
+    }
+    .canvas-wall canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: pixelated;
+    }
+
+    /* 3D tree standing between launcher and canvas (CSS-masked silhouette) */
+    .tree-img {
+      position: absolute;
+      bottom: 250px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 340px;
+      height: 340px;
+      z-index: 10;
+      pointer-events: none;
+      background: url('../Sources/di-lab/xray-tree-3D-color.PNG') center / contain no-repeat;
+      filter: drop-shadow(0 14px 18px rgba(0,0,0,0.5));
+    }
+
+    /* Launcher floor: trapezoidal perspective platform */
+    .floor {
+      position: absolute;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      width: 560px;
+      height: 200px;
+      z-index: 15;
+      pointer-events: none;
+    }
+
+    /* ── Top-view diagram ── */
+    .topview {
+      background: #f7fafc;
+      border: 1px solid #e8ecf1;
+      border-radius: 16px;
+      padding: 14px 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .tv-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #4E74BF;
+      text-align: center;
+    }
+    .tv-track {
+      position: relative;
+      flex: 1;
+      background: linear-gradient(180deg, #eaf2fa 0%, #d9e6f4 100%);
+      border: 1px dashed #b9ccdf;
+      border-radius: 10px;
+      min-height: 560px;
+    }
+    .tv-canvas {
+      position: absolute;
+      top: 14px;
+      left: 10%;
+      width: 80%;
+      height: 22px;
+      background: #fff;
+      border: 2px solid #4E74BF;
+      border-radius: 3px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #4E74BF;
+      text-align: center;
+      line-height: 20px;
+      letter-spacing: 0.08em;
+    }
+    .tv-tree {
+      position: absolute;
+      top: 65px;
+      left: 50%;
+      transform: translate(-50%, 0);
+      width: 56px;
+      height: 56px;
+      filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));
+    }
+    .tv-tree svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .tv-tree::after {
+      content: "Tree";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translate(-50%, 4px);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #2d6b3a;
+      letter-spacing: 0.05em;
+    }
+    .tv-launcher {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 92px;
+      height: 32px;
+      background: linear-gradient(180deg, #5BA9D9 0%, #4E74BF 100%);
+      border: 1.5px solid #122A40;
+      border-radius: 5px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #fff;
+      text-align: center;
+      line-height: 30px;
+      letter-spacing: 0.06em;
+      transition: top 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .tv-launcher::before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-bottom: 10px solid #122A40;
+    }
+    .tv-you {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #122A40;
+      letter-spacing: 0.08em;
+    }
+    .tv-you::before {
+      content: "🤠";
+      display: block;
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: 2px;
+    }
+    .tv-dist-label {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translate(0, -50%) rotate(90deg);
+      transform-origin: center;
+      font-size: 0.55rem;
+      color: #888;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+    .floor-plate {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(91,169,217,0.12) 0%, rgba(78,116,191,0.28) 100%);
+      clip-path: polygon(28% 0%, 72% 0%, 100% 100%, 0% 100%);
+      border-bottom: 2px solid rgba(91,169,217,0.4);
+    }
+    .floor-grid-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* Paintballs sitting on floor grid (magazine visualization) */
+    .floor-ball {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      margin-left: -7px;
+      margin-top: -7px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #555 0%, #000 70%);
+      box-shadow: 0 2px 3px rgba(0,0,0,0.8), inset -1px -1px 2px rgba(255,255,255,0.15);
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .floor-ball.depleting { transform: scale(0); opacity: 0; }
+
+    /* Flying paintball */
+    .paintball {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      margin-left: -6px;
+      margin-top: -6px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #555 0%, #000 70%);
+      box-shadow: 0 0 8px rgba(0,0,0,0.8);
+      z-index: 12;
+      pointer-events: none;
+    }
+
+    /* Tip bar */
+    .tip-bar {
+      margin-top: 16px;
+      padding: 14px 18px;
+      background: #EBF4FB;
+      border: 1px solid #c7e0f1;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      color: #122A40;
+      line-height: 1.55;
+    }
+    .tip-bar strong { color: #4E74BF; }
+    .tip-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 0.82rem;
+    }
+    .tip-table th,
+    .tip-table td {
+      padding: 8px 12px;
+      text-align: left;
+      vertical-align: top;
+      border: 1px solid #c7e0f1;
+      width: 50%;
+    }
+    .tip-table th {
+      background: #4E74BF;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+    }
+    .tip-table tbody tr:nth-child(even) td { background: #f5fafd; }
+
+    /* ── Responsive ── */
+    @media (max-width: 860px) {
+      .studio-grid { grid-template-columns: 1fr; }
+      .stage { height: 420px; }
+    }
+    @media (max-width: 560px) {
+      .studio-hero h1 { font-size: 1.5rem; }
+      .objectives-bar { gap: 12px; }
+      .controls-panel { padding: 18px; }
+      .stage { height: 380px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb-bar">
+    <a href="../index.html">Home</a>
+    <span class="sep">&#9654;</span>
+    <a href="../Toolkits/di.html">Diagnostic Imaging</a>
+    <span class="sep">&#9654;</span>
+    <span class="current">X-ray: The Shadow Camera</span>
+  </nav>
+
+  <!-- Hero -->
+  <div class="studio-hero">
+    <div class="hero-badge">X-ray Module</div>
+    <h1> Shadow Splash Studio: <span>Reveal the Invisible</span></h1>
+    <p>Launch black paint balls through a tree onto a white canvas. Adjust quantity, power, and distance to see how X-rays really work.</p>
+  </div>
+
+  <!-- Learning Objectives Bar -->
+  <div class="objectives-bar">
+    <div class="obj-item">
+      <span class="obj-num">1</span>
+      Try different parameter settings
+    </div>
+    <div class="obj-item">
+      <span class="obj-num">2</span>
+      Watch what happens on the canvas and top view
+    </div>
+    <div class="obj-item">
+      <span class="obj-num">3</span>
+      Compare your results
+    </div>
+  </div>
+
+  <!-- Studio -->
+  <div class="studio-wrap">
+    <div class="studio-grid">
+
+      <!-- Left: Controls -->
+      <div class="controls-panel">
+        <h3 class="panel-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4E74BF" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Simulation Settings
+        </h3>
+
+        <!-- Quantity slider -->
+        <div class="slider-group">
+          <div class="slider-label">
+            <span class="slider-name">Paint Ball Quantity</span>
+            <span class="slider-value" id="maValue">0 balls</span>
+          </div>
+          <p class="slider-analogy">More balls = clearer image</p>
+          <input type="range" id="maSlider" min="0" max="6400" value="0" step="50" oninput="updateSlider('ma')">
+        </div>
+
+        <!-- Power slider -->
+        <div class="slider-group">
+          <div class="slider-label">
+            <span class="slider-name">Paint Ball Power</span>
+            <span class="slider-value" id="kvpValue">Mid</span>
+          </div>
+          <p class="slider-analogy">Stronger balls punch through thin leaves</p>
+          <input type="range" id="kvpSlider" min="0" max="2" value="1" step="1" oninput="updateSlider('kvp')">
+        </div>
+
+        <!-- Distance slider -->
+        <div class="slider-group">
+          <div class="slider-label">
+            <span class="slider-name">Distance to Canvas</span>
+            <span class="slider-value" id="distValue">100 cm</span>
+          </div>
+          <p class="slider-analogy">Farther = balls spread out more</p>
+          <input type="range" id="distSlider" min="50" max="180" value="100" step="10" oninput="updateSlider('dist')">
+        </div>
+
+        <!-- Fire button -->
+        <button class="fire-btn" id="fireBtn" onclick="fireShot()">
+          Take the Shot 📸
+        </button>
+
+        <div class="saved-folder">
+          <div class="saved-folder-head">
+            <span class="saved-folder-title">Saved Reference Folder</span>
+            <button class="saved-folder-clear" onclick="clearSavedShots()">Clear All</button>
+          </div>
+          <div class="saved-grid" id="savedGrid">
+            <div class="saved-empty">No shots saved yet. Take a shot to add one.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Simulation stage -->
+      <div>
+        <div class="sim-row">
+        <div class="stage" id="stage">
+          <span class="stage-label">X-ray Simulation</span>
+
+          <div class="scene-group" id="sceneGroup">
+            <!-- Back wall: white canvas (image detector) -->
+            <div class="canvas-wall">
+              <canvas id="detectorCanvas" width="1000" height="1000"></canvas>
+            </div>
+            <!-- 3D tree standing between launcher and canvas -->
+            <div class="tree-img" id="treeImg" role="img" aria-label="tree"></div>
+          </div>
+
+          <!-- Launcher: trapezoidal floor with paintball grid -->
+          <div class="floor">
+            <div class="floor-plate"></div>
+            <svg class="floor-grid-svg" viewBox="0 0 520 160" preserveAspectRatio="none">
+              <!-- perspective grid lines -->
+              <line x1="145" y1="0" x2="0" y2="160" stroke="rgba(91,169,217,0.35)" stroke-width="1"/>
+              <line x1="200" y1="0" x2="130" y2="160" stroke="rgba(91,169,217,0.25)" stroke-width="1"/>
+              <line x1="260" y1="0" x2="260" y2="160" stroke="rgba(91,169,217,0.25)" stroke-width="1"/>
+              <line x1="320" y1="0" x2="390" y2="160" stroke="rgba(91,169,217,0.25)" stroke-width="1"/>
+              <line x1="375" y1="0" x2="520" y2="160" stroke="rgba(91,169,217,0.35)" stroke-width="1"/>
+              <line x1="145" y1="0" x2="375" y2="0" stroke="rgba(91,169,217,0.35)" stroke-width="1"/>
+              <line x1="95" y1="55" x2="425" y2="55" stroke="rgba(91,169,217,0.25)" stroke-width="1"/>
+              <line x1="45" y1="110" x2="475" y2="110" stroke="rgba(91,169,217,0.3)" stroke-width="1"/>
+              <line x1="0" y1="160" x2="520" y2="160" stroke="rgba(91,169,217,0.45)" stroke-width="1.5"/>
+            </svg>
+            <div id="floorBalls"></div>
+          </div>
+        </div>
+
+        <!-- Top-view diagram (right side) -->
+        <div class="topview">
+          <div class="tv-title">Top View</div>
+          <div class="tv-track" id="tvTrack">
+            <div class="tv-canvas">CANVAS</div>
+            <div class="tv-tree">
+              <svg viewBox="10 10 80 80" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="tvTreeGrad" cx="40%" cy="40%" r="60%">
+                    <stop offset="0%" stop-color="#4ea85f"/>
+                    <stop offset="70%" stop-color="#2d6b3a"/>
+                  </radialGradient>
+                </defs>
+                <path d="M 50 24 A 14 14 0 0 1 72.5 37 A 14 14 0 0 1 72.5 63 A 14 14 0 0 1 50 76 A 14 14 0 0 1 27.5 63 A 14 14 0 0 1 27.5 37 A 14 14 0 0 1 50 24 Z" fill="url(#tvTreeGrad)" stroke="#1e4a26" stroke-width="3" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <div class="tv-launcher" id="tvLauncher">Launcher</div>
+            <div class="tv-you">YOU</div>
+          </div>
+        </div>
+        </div>
+
+        <div class="tip-bar">
+          <strong>How does this work:</strong> Black paint balls are like X-ray beams. When they hit the tree, some get blocked and some pass through. This is how X-ray images are made: bones block most beams and appear white, soft tissues block some and appear gray, and air lets beams pass through, so it looks black.
+          <div style="display: flex; gap: 2%; margin: 10px 0;">
+            <img src="../Sources/di-lab/xray-hand-dot.png" alt="Paint ball simulation of hand" style="width: 49%; height: auto; border-radius: 4px;">
+            <img src="../Sources/di-lab/xray-hand.png" alt="X-ray of hand" style="width: 49%; height: auto; border-radius: 4px;">
+          </div>
+          <table class="tip-table">
+            <thead>
+              <tr>
+                <th>Paint Ball Simulation</th>
+                <th>X-ray</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Blocked paint balls <strong>→ white canvas</strong></td>
+                <td>Blocked X-rays <strong>→ white (e.g. bone) </strong></td>
+              </tr>
+              <tr>
+                <td>Paint balls pass through <strong>→ black canvas</strong></td>
+                <td>X-rays pass through <strong>→ black (e.g. air)</strong></td>
+              </tr>
+            </tbody>
+          </table>
+          <strong>Simple Rule to Remember:</strong>
+          <div style="padding-left: 18px; margin-top: 4px;">
+            ⏺ More balls = clearer image<br>
+            ⏺ More power = can pass through more easily<br>
+            ⏺ More distance = spreads out, covers more<br>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── Config ──
+    var GRID = 80;              // 80 x 80 dot grid on a 1000x1000 canvas
+    var CELL = 1000 / GRID;     // 12.5 px per cell
+    var DOT_RADIUS = CELL * 0.42;
+
+    // Offscreen canvas holds the rasterized tree SVG for blocker detection.
+    var treeMask = null;        // Uint8Array length GRID*GRID, 1 = tree blocks this cell
+    var treeMaskReady = false;
+    var treeSrcData = null;     // Full 1000x1000 ImageData of rasterized tree
+    var TREE_SRC = 1000;
+
+    function buildTreeMask(callback) {
+      // Use the solid 3D tree PNG (white silhouette on black) as the blocker source.
+      // Its silhouette fills the entire canvas-wall (1000 x 1000).
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        var off = document.createElement('canvas');
+        off.width = TREE_SRC; off.height = TREE_SRC;
+        var octx = off.getContext('2d');
+        octx.fillStyle = '#000';
+        octx.fillRect(0, 0, TREE_SRC, TREE_SRC);
+        octx.drawImage(img, 0, 0, TREE_SRC, TREE_SRC);
+        treeSrcData = octx.getImageData(0, 0, TREE_SRC, TREE_SRC).data;
+        rebuildTreeMask();
+        treeMaskReady = true;
+        if (callback) callback();
+      };
+      img.onerror = function() {
+        treeMask = new Uint8Array(GRID * GRID);
+        treeMaskReady = true;
+        if (callback) callback();
+      };
+      img.src = '../Sources/di-lab/xray-tree-3D.png';
+    }
+
+    // Rebuild the tree blocker mask using projection magnification driven by distance.
+    // Closer source → larger projected shadow → we sample a smaller cropped region of
+    // the source image, so only part of the tree fills the detector (zoomed-in view).
+    // Follows inverse-law geometric projection (mag ∝ 1/distance), matching how an
+    // X-ray source close to the subject magnifies the shadow on the detector.
+    function rebuildTreeMask() {
+      if (!treeSrcData) return;
+      var distEl = document.getElementById('distSlider');
+      var dist = distEl ? parseInt(distEl.value) : 100;
+      var DIST_MAX = 180;
+      // mag = 1 at max distance (whole tree), grows as distance shrinks.
+      var mag = DIST_MAX / dist;
+      var src = TREE_SRC / mag;
+      var sx0 = (TREE_SRC - src) / 2;
+      var sy0 = (TREE_SRC - src) / 2;
+      treeMask = new Uint8Array(GRID * GRID);
+      for (var gy = 0; gy < GRID; gy++) {
+        for (var gx = 0; gx < GRID; gx++) {
+          var cx = Math.floor(sx0 + (gx + 0.5) / GRID * src);
+          var cy = Math.floor(sy0 + (gy + 0.5) / GRID * src);
+          if (cx < 0) cx = 0; else if (cx >= TREE_SRC) cx = TREE_SRC - 1;
+          if (cy < 0) cy = 0; else if (cy >= TREE_SRC) cy = TREE_SRC - 1;
+          var i = (cy * TREE_SRC + cx) * 4;
+          var lum = (treeSrcData[i] + treeSrcData[i + 1] + treeSrcData[i + 2]) / 3;
+          treeMask[gy * GRID + gx] = lum > 128 ? 1 : 0;
+        }
+      }
+    }
+
+    // ── Canvas rendering ──
+    function clearDetector() {
+      var canvas = document.getElementById('detectorCanvas');
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      paintedCells = {};
+    }
+
+    // Track which grid cells have already been painted (avoid overdraw)
+    var paintedCells = {};
+
+    function paintCell(gx, gy) {
+      var key = gy * GRID + gx;
+      if (paintedCells[key]) return false;
+      paintedCells[key] = 1;
+      var ctx = document.getElementById('detectorCanvas').getContext('2d');
+      var cx = (gx + 0.5) * CELL;
+      var cy = (gy + 0.5) * CELL;
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.arc(cx, cy, DOT_RADIUS, 0, Math.PI * 2);
+      ctx.fill();
+      return true;
+    }
+
+    // ── Slider / Floor magazine ──
+    function updateSlider(type) {
+      // Any parameter change clears the detector so each shot is independent.
+      // Previous shots remain accessible through the Saved Reference Folder.
+      if (!isFiring) clearDetector();
+      if (type === 'ma') {
+        var n = parseInt(document.getElementById('maSlider').value);
+        document.getElementById('maValue').textContent = n + ' balls';
+        updateFloorBalls();
+      } else if (type === 'kvp') {
+        var lvl = parseInt(document.getElementById('kvpSlider').value);
+        var labels = ['Low', 'Mid', 'High'];
+        document.getElementById('kvpValue').textContent = labels[lvl];
+      } else if (type === 'dist') {
+        document.getElementById('distValue').textContent = document.getElementById('distSlider').value + ' cm';
+        updateDistance();
+      }
+    }
+
+    // Distance slider controls launcher → canvas distance.
+    // Tree ↔ canvas distance is fixed. So as distance grows, tree+canvas recede together (scale down),
+    // while on the top view the launcher moves away from the canvas (toward "You").
+    function updateDistance() {
+      var dist = parseInt(document.getElementById('distSlider').value);
+      // Range 50..180; baseline 100 → scale 1.0
+      // At 50 (close): scale ~1.25. At 180 (far): scale ~0.60.
+      var scale = Math.max(0.55, Math.min(1.35, 100 / dist));
+      // Shift scene up slightly as it recedes (farther objects sit higher in the FOV)
+      var dy = (1 - scale) * 60; // px upward offset
+      var sg = document.getElementById('sceneGroup');
+      sg.style.transform = 'translateY(' + (-dy) + 'px) scale(' + scale + ')';
+
+      // Top view: launcher moves along the track.
+      // Track: canvas at top (~36px), "You" near bottom (~92% of track).
+      // Map dist 50..180 → launcherTopPct 26% .. 85%
+      var t = (dist - 50) / (180 - 50);
+      var pct = 26 + t * 59;
+      var launcher = document.getElementById('tvLauncher');
+      launcher.style.top = pct + '%';
+
+      // Re-project the tree shadow: closer = larger shadow = cropped view on detector.
+      if (treeSrcData) {
+        rebuildTreeMask();
+        clearDetector();
+      }
+    }
+
+    // Render paintballs sitting on the trapezoidal floor.
+    // Up to MAX_FLOOR_BALLS shown, proportional to slider value.
+    var MAX_FLOOR_BALLS = 40;
+
+    function updateFloorBalls() {
+      var n = parseInt(document.getElementById('maSlider').value);
+      var visible = Math.round((n / 6400) * MAX_FLOOR_BALLS);
+      if (n > 0 && visible === 0) visible = 1;
+
+      var container = document.getElementById('floorBalls');
+      container.innerHTML = '';
+      // 4 rows × 10 cols grid on the trapezoid, in floor-svg coords (520 x 160)
+      // Near row (bottom, wide): y=140, x from 30 to 490
+      // Far row (top, narrow):   y=20,  x from 160 to 360
+      var rows = 4, cols = 10;
+      var positions = [];
+      for (var r = 0; r < rows; r++) {
+        var t = r / (rows - 1); // 0 near (bottom) .. 1 far (top)
+        var y = 140 - t * 120;  // 140..20
+        var xStart = 30 + t * 130;   // 30..160
+        var xEnd = 490 - t * 130;    // 490..360
+        for (var c = 0; c < cols; c++) {
+          var u = c / (cols - 1);
+          var x = xStart + u * (xEnd - xStart);
+          positions.push({ x: x, y: y, r: r });
+        }
+      }
+      // Fill from the nearest (largest r=0 is near) backward; but visually we want near rows fullest.
+      // We sort so row 0 (near) is used first; within row, center to edges.
+      positions.sort(function(a, b) {
+        if (a.r !== b.r) return a.r - b.r;
+        return Math.abs(a.x - 260) - Math.abs(b.x - 260);
+      });
+
+      for (var i = 0; i < Math.min(visible, positions.length); i++) {
+        var p = positions[i];
+        var b = document.createElement('div');
+        b.className = 'floor-ball';
+        // Convert from svg coords (520 x 160) to percent
+        b.style.left = (p.x / 520 * 100) + '%';
+        b.style.top = (p.y / 160 * 100) + '%';
+        // Perspective size: nearer (r=0) = bigger, farther (r=3) = smaller
+        var sz = 16 - p.r * 2;
+        b.style.width = sz + 'px';
+        b.style.height = sz + 'px';
+        b.style.marginLeft = (-sz / 2) + 'px';
+        b.style.marginTop = (-sz / 2) + 'px';
+        container.appendChild(b);
+      }
+    }
+
+    function depleteFloor(callback) {
+      var balls = document.querySelectorAll('#floorBalls .floor-ball');
+      var total = balls.length;
+      if (total === 0) { callback(); return; }
+      var idx = 0;
+      var interval = setInterval(function() {
+        if (idx >= total) {
+          clearInterval(interval);
+          setTimeout(callback, 120);
+          return;
+        }
+        balls[total - 1 - idx].classList.add('depleting');
+        idx++;
+      }, Math.max(10, 300 / total));
+    }
+
+    // ── Fire shot ──
+    var isFiring = false;
+
+    function fireShot() {
+      if (isFiring) return;
+      var rawCount = parseInt(document.getElementById('maSlider').value);
+      if (rawCount === 0) return;
+      var powerLvl = parseInt(document.getElementById('kvpSlider').value);
+      var powerMult = [0.25, 0.60, 1.0][powerLvl];
+      var count = Math.max(1, Math.round(rawCount * powerMult));
+      if (!treeMaskReady) return;
+
+      isFiring = true;
+      var btn = document.getElementById('fireBtn');
+      btn.classList.add('firing');
+      btn.textContent = 'Firing...';
+      document.getElementById('stage').classList.add('firing');
+
+      // Build list of target cells: random unpainted cells, up to `count` or all remaining
+      var available = [];
+      for (var gy = 0; gy < GRID; gy++) {
+        for (var gx = 0; gx < GRID; gx++) {
+          var key = gy * GRID + gx;
+          if (!paintedCells[key]) available.push([gx, gy]);
+        }
+      }
+      // Shuffle
+      for (var i = available.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = available[i]; available[i] = available[j]; available[j] = tmp;
+      }
+      var toFire = Math.min(count, available.length);
+
+      depleteFloor(function() {
+        // Animate visible subset of balls (cap the number of animated balls for perf)
+        var ANIM_CAP = 60;
+        var animCount = Math.min(ANIM_CAP, toFire);
+        var stage = document.getElementById('stage');
+        var sW = stage.offsetWidth;
+        var sH = stage.offsetHeight;
+
+        // Canvas-wall pixel rect inside stage
+        var wallW = 340, wallH = 340;
+        var wallLeft = (sW - wallW) / 2;
+        var wallTop = 30;
+
+        // Launch origin: center-bottom of stage
+        var originX = sW / 2;
+        var originY = sH - 40;
+
+        var fired = 0;
+        var animInterval = setInterval(function() {
+          if (fired >= animCount) {
+            clearInterval(animInterval);
+          } else {
+            var cell = available[fired];
+            var gx = cell[0], gy = cell[1];
+            var blocked = treeMask[gy * GRID + gx] === 1;
+
+            // Target position on screen (canvas-wall rect)
+            var tx = wallLeft + (gx + 0.5) / GRID * wallW;
+            var ty = wallTop + (gy + 0.5) / GRID * wallH;
+
+            // If blocked, stop at tree depth (70% of the way)
+            var endX = blocked ? originX + (tx - originX) * 0.75 : tx;
+            var endY = blocked ? originY + (ty - originY) * 0.75 : ty;
+
+            var ball = document.createElement('div');
+            ball.className = 'paintball';
+            ball.style.left = originX + 'px';
+            ball.style.top = originY + 'px';
+            stage.appendChild(ball);
+
+            var dur = 320 + Math.random() * 140;
+            ball.animate([
+              { left: originX + 'px', top: originY + 'px', opacity: 1, transform: 'scale(1)' },
+              { left: endX + 'px', top: endY + 'px', opacity: blocked ? 0.3 : 0, transform: 'scale(0.5)' }
+            ], { duration: dur, easing: 'ease-out', fill: 'forwards' });
+
+            setTimeout(function() { ball.remove(); }, dur + 60);
+            fired++;
+          }
+        }, 25);
+
+        // Apply ALL hits to the detector canvas instantly (but keep painted-cell bookkeeping accurate).
+        // For the animated subset we still mark them as painted synchronously; visually they match.
+        for (var k = 0; k < toFire; k++) {
+          var c = available[k];
+          var blockedK = treeMask[c[1] * GRID + c[0]] === 1;
+          if (!blockedK) {
+            paintCell(c[0], c[1]);
+          } else {
+            // Mark the cell as "attempted" so it isn't retried — but leave it white (tree shadow).
+            paintedCells[c[1] * GRID + c[0]] = 1;
+          }
+        }
+
+        // After animation winds down, reset button and snapshot the result.
+        setTimeout(function() {
+          btn.classList.remove('firing');
+          btn.textContent = 'Take the Shot';
+          document.getElementById('stage').classList.remove('firing');
+          isFiring = false;
+          updateFloorBalls();
+          saveCurrentShot();
+        }, 25 * animCount + 500);
+      });
+    }
+
+    // ── Saved Reference Folder ──
+    var savedShots = [];
+
+    function saveCurrentShot() {
+      var src = document.getElementById('detectorCanvas');
+      // Downscale to a thumbnail to keep memory light.
+      var thumb = document.createElement('canvas');
+      thumb.width = 240; thumb.height = 240;
+      var tctx = thumb.getContext('2d');
+      tctx.fillStyle = '#fff';
+      tctx.fillRect(0, 0, 240, 240);
+      tctx.drawImage(src, 0, 0, 240, 240);
+      var dataUrl = thumb.toDataURL('image/png');
+
+      var qty = parseInt(document.getElementById('maSlider').value);
+      var pwLbls = ['Low', 'Mid', 'High'];
+      var pw = pwLbls[parseInt(document.getElementById('kvpSlider').value)];
+      var dist = parseInt(document.getElementById('distSlider').value);
+
+      savedShots.push({
+        img: dataUrl,
+        qty: qty,
+        power: pw,
+        dist: dist,
+        id: Date.now() + '_' + Math.random().toString(36).slice(2, 7)
+      });
+      renderSavedShots();
+    }
+
+    function renderSavedShots() {
+      var grid = document.getElementById('savedGrid');
+      if (savedShots.length === 0) {
+        grid.innerHTML = '<div class="saved-empty">No shots saved yet. Take a shot to add one.</div>';
+        return;
+      }
+      grid.innerHTML = '';
+      for (var i = savedShots.length - 1; i >= 0; i--) {
+        var s = savedShots[i];
+        var item = document.createElement('div');
+        item.className = 'saved-item';
+        item.title = 'Qty ' + s.qty + ' · ' + s.power + ' power · ' + s.dist + ' cm';
+        item.innerHTML =
+          '<img src="' + s.img + '" alt="saved shot">' +
+          '<div class="saved-item-meta">' + s.qty + ' · ' + s.power + ' · ' + s.dist + 'cm</div>' +
+          '<button class="saved-item-del" data-id="' + s.id + '" title="Remove">×</button>';
+        item.querySelector('.saved-item-del').addEventListener('click', function(ev) {
+          ev.stopPropagation();
+          var id = this.getAttribute('data-id');
+          savedShots = savedShots.filter(function(x) { return x.id !== id; });
+          renderSavedShots();
+        });
+        grid.appendChild(item);
+      }
+    }
+
+    function clearSavedShots() {
+      savedShots = [];
+      renderSavedShots();
+    }
+
+    // ── Init ──
+    clearDetector();
+    updateFloorBalls();
+    updateDistance();
+    buildTreeMask();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,910 @@
+{
+  "toolkits": {
+    "mls": {
+      "name": "Medical Laboratory Science",
+      "icon": "🔬",
+      "color": "#7a2cff",
+      "description": "Become a Lab Detective. Solve Cases through Science.",
+      "categories": ["Microbiology", "Blood Bank", "Pathology", "Physiology", "Immunology"],
+      "basics": {
+        "tabs": [
+          {
+            "id": "classification",
+            "title": "Bacterial Classification",
+            "content": {
+              "intro": "Bacteria are classified by shape (morphology) and Gram stain reaction. These two features are the first clues a medical laboratory scientist uses to identify an unknown organism.",
+              "shapes": [
+                {
+                  "name": "Cocci",
+                  "description": "Spherical bacteria. Can appear in clusters (staphylococci), chains (streptococci), or pairs (diplococci).",
+                  "examples": ["Staphylococcus aureus", "Streptococcus pyogenes", "Neisseria meningitidis"]
+                },
+                {
+                  "name": "Bacilli",
+                  "description": "Rod-shaped bacteria. May be short and plump or long and thin. Some form endospores.",
+                  "examples": ["Escherichia coli", "Pseudomonas aeruginosa", "Bacillus anthracis"]
+                },
+                {
+                  "name": "Spirilla",
+                  "description": "Spiral or corkscrew-shaped bacteria. Includes spirochetes with flexible cell walls.",
+                  "examples": ["Treponema pallidum", "Borrelia burgdorferi", "Helicobacter pylori"]
+                }
+              ],
+              "gramTable": {
+                "headers": ["Feature", "Gram-Positive", "Gram-Negative"],
+                "rows": [
+                  ["Stain Color", "Purple / Violet", "Pink / Red"],
+                  ["Cell Wall", "Thick peptidoglycan layer", "Thin peptidoglycan + outer membrane"],
+                  ["Outer Membrane", "Absent", "Present (contains LPS)"],
+                  ["Antibiotic Sensitivity", "Generally more susceptible", "Often more resistant"],
+                  ["Examples", "S. aureus, S. pyogenes", "E. coli, P. aeruginosa"]
+                ]
+              }
+            },
+            "questions": [
+              {
+                "id": "q1",
+                "question": "Which bacterial shape appears as spherical cells in clusters?",
+                "options": ["Bacilli", "Cocci", "Spirilla", "Vibrio"],
+                "correct": 1,
+                "explanation": "Cocci are spherical bacteria. When they form clusters, they are called staphylococci (like Staphylococcus aureus)."
+              },
+              {
+                "id": "q2",
+                "question": "What color do Gram-negative bacteria appear after Gram staining?",
+                "options": ["Purple", "Blue", "Pink/Red", "Green"],
+                "correct": 2,
+                "explanation": "Gram-negative bacteria have a thin peptidoglycan layer and lose the crystal violet during decolorization, then pick up the pink/red safranin counterstain."
+              },
+              {
+                "id": "q3",
+                "question": "Which structure is found ONLY in Gram-negative bacteria?",
+                "options": ["Peptidoglycan", "Outer membrane with LPS", "Ribosomes", "Cell membrane"],
+                "correct": 1,
+                "explanation": "The outer membrane containing lipopolysaccharide (LPS) is unique to Gram-negative bacteria. It acts as an additional barrier and contributes to antibiotic resistance."
+              }
+            ]
+          },
+          {
+            "id": "gramstain",
+            "title": "Gram Staining Procedure",
+            "content": {
+              "intro": "The Gram stain is the most important differential stain in clinical microbiology. Quality control is essential for accurate results.",
+              "steps": [
+                {
+                  "number": 1,
+                  "name": "Crystal Violet",
+                  "action": "Apply primary stain for 1 minute",
+                  "result": "All bacteria stain purple",
+                  "detail": "Crystal violet penetrates the cell wall of all bacteria."
+                },
+                {
+                  "number": 2,
+                  "name": "Gram's Iodine",
+                  "action": "Apply mordant for 1 minute",
+                  "result": "Crystal violet-iodine complex forms",
+                  "detail": "Iodine forms a large complex with crystal violet inside the cell, making it harder to wash out."
+                },
+                {
+                  "number": 3,
+                  "name": "Decolorizer",
+                  "action": "Apply acetone-alcohol briefly (5-10 seconds)",
+                  "result": "Gram-negative cells lose purple stain",
+                  "detail": "The alcohol dissolves the outer membrane of Gram-negative bacteria and washes out the crystal violet. Gram-positive cells retain the stain in their thick peptidoglycan."
+                },
+                {
+                  "number": 4,
+                  "name": "Safranin",
+                  "action": "Apply counterstain for 30 seconds",
+                  "result": "Gram-negative cells stain pink/red",
+                  "detail": "Safranin provides a contrasting pink color to the now-colorless Gram-negative bacteria. Gram-positive bacteria remain purple."
+                }
+              ],
+              "qcControls": {
+                "positive": {
+                  "organism": "Staphylococcus aureus (ATCC 25923)",
+                  "expected": "Gram-positive cocci in clusters — must appear PURPLE"
+                },
+                "negative": {
+                  "organism": "Escherichia coli (ATCC 25922)",
+                  "expected": "Gram-negative bacilli — must appear PINK/RED"
+                },
+                "importance": "QC controls must be run with every new lot of reagents and at the beginning of each shift. If controls fail, patient results cannot be reported."
+              }
+            },
+            "questions": [
+              {
+                "id": "q4",
+                "question": "What is the purpose of Gram's iodine in the Gram stain?",
+                "options": ["To stain bacteria purple", "To act as a mordant forming a crystal violet-iodine complex", "To decolorize Gram-negative bacteria", "To counterstain pink"],
+                "correct": 1,
+                "explanation": "Gram's iodine acts as a mordant — it forms a large crystal violet-iodine complex inside the cell, which helps retain the primary stain in Gram-positive bacteria."
+              },
+              {
+                "id": "q5",
+                "question": "If the QC positive control (S. aureus) appears pink instead of purple, what should you do?",
+                "options": ["Report patient results anyway", "Repeat the QC and staining procedure", "Switch to a different stain", "Ignore it if patient slides look correct"],
+                "correct": 1,
+                "explanation": "If QC controls fail, the staining procedure is unreliable. You must troubleshoot (check reagents, technique), repeat the staining, and cannot report patient results until QC passes."
+              }
+            ]
+          },
+          {
+            "id": "workflow",
+            "title": "Diagnostic Workflow",
+            "content": {
+              "intro": "The clinical microbiology laboratory follows a systematic workflow to identify pathogens from patient specimens.",
+              "pipeline": [
+                {
+                  "step": 1,
+                  "name": "Specimen Collection",
+                  "description": "Proper collection is critical. The specimen must represent the site of infection and be collected before antibiotics when possible."
+                },
+                {
+                  "step": 2,
+                  "name": "Inoculation & Plating",
+                  "description": "Specimen is streaked onto appropriate culture media (Blood agar, MacConkey agar, Chocolate agar) for isolation."
+                },
+                {
+                  "step": 3,
+                  "name": "Incubation",
+                  "description": "Plates are incubated at 35-37°C for 18-24 hours (some organisms require longer or special conditions)."
+                },
+                {
+                  "step": 4,
+                  "name": "Colony Examination",
+                  "description": "Observe colony morphology: size, shape, color, hemolysis pattern, and odor."
+                },
+                {
+                  "step": 5,
+                  "name": "Gram Stain",
+                  "description": "Perform Gram stain from isolated colonies to determine morphology and Gram reaction."
+                },
+                {
+                  "step": 6,
+                  "name": "Biochemical Testing",
+                  "description": "Run confirmatory biochemical tests (catalase, coagulase, oxidase, etc.) based on Gram stain results."
+                },
+                {
+                  "step": 7,
+                  "name": "Identification & Reporting",
+                  "description": "Combine all results to identify the organism. Report to clinician with antimicrobial susceptibility results."
+                }
+              ]
+            },
+            "questions": [
+              {
+                "id": "q6",
+                "question": "Why is it important to collect specimens before antibiotic therapy?",
+                "options": ["Antibiotics change the specimen color", "Antibiotics may kill or inhibit the pathogen, leading to false-negative cultures", "Antibiotics make specimens toxic to handle", "It is not actually important"],
+                "correct": 1,
+                "explanation": "Antibiotics may kill or suppress the growth of the causative organism, resulting in false-negative cultures. Collecting before therapy gives the best chance of isolating and identifying the pathogen."
+              },
+              {
+                "id": "q7",
+                "question": "What is the correct order after incubation?",
+                "options": ["Biochemical tests → Gram stain → Colony exam", "Colony exam → Gram stain → Biochemical tests", "Gram stain → Colony exam → Reporting", "Reporting → Colony exam → Biochemical tests"],
+                "correct": 1,
+                "explanation": "After incubation, you first examine colony morphology, then perform a Gram stain from isolated colonies, and finally run biochemical tests to confirm the organism identity."
+              }
+            ]
+          }
+        ]
+      },
+      "cases": [
+        {
+          "id": "stephen",
+          "title": "Squeezing Pimple Stephen",
+          "displayTitle": "The Pimple Problem",
+          "nickname": "Stephen",
+          "avatar": "S",
+          "avatarColor": "#FF6B6B",
+          "severity": "Medium",
+          "short": "Popped a pimple, woke up with severe facial swelling",
+          "description": "Stephen popped a pimple on his nose before bed. A few hours later, he woke up with severe facial pain and noticed that his face was swollen, red, and warm to the touch. By morning, he also had a fever. The doctor suspected a bacterial skin infection, and a swab from the infected area was sent to the lab. ",
+          "keySymptoms": ["Facial swelling", "Redness & warmth", "Fever"],
+          "symptoms": ["Severe facial pain", "Swelling on face", "Redness and warmth to touch", "Fever"],
+          "keyFeatures": ["Gram-positive cocci in clusters", "Catalase positive", "Coagulase positive", "Golden-yellow colonies with beta-hemolysis"],
+          "patient": {
+            "name": "Stephen",
+            "age": 13,
+            "sex": "Male",
+            "chiefComplaint": "Severe facial swelling, redness, and fever after popping a pimple above his lip",
+            "history": "Stephen popped a pimple above his lip before bed. Woke up hours later with severe facial pain. By morning, one side of his face was swollen, red, and warm to the touch with a fever. Doctor suspects bacterial skin infection."
+          },
+          "lab": {
+            "culturePlate": {
+              "medium": "Sheep Blood Agar",
+              "appearance": "Golden-yellow colonies with beta-hemolysis (clear zone around colonies)",
+              "hemolysis": "Beta (complete hemolysis)"
+            },
+            "gramStain": {
+              "morphology": "Gram-positive cocci in clusters",
+              "color": "purple",
+              "shape": "cocci-clusters",
+              "question": "Looking through the microscope, you see purple spherical organisms arranged in grape-like clusters. The QC controls show expected results. What is your interpretation?",
+              "options": ["Gram-positive cocci in clusters", "Gram-negative cocci in chains", "Gram-positive bacilli", "Gram-negative rods"],
+              "correct": 0,
+              "clue": "Gram+, cocci in clusters"
+            },
+            "biochemTests": [
+              {
+                "name": "Catalase Test",
+                "tag": "catalase",
+                "procedure": "Place a drop of 3% hydrogen peroxide on a colony from the blood agar plate.",
+                "result": "Positive — vigorous bubbling observed",
+                "interpretation": "Differentiates Staphylococcus (catalase +) from Streptococcus (catalase −)",
+                "question": "You add hydrogen peroxide to the colony and see vigorous bubbling. What does this catalase-positive result tell you?",
+                "options": ["Staphylococcus species (catalase +)", "Streptococcus species (catalase −)", "Gram-negative organism", "Inconclusive — repeat test"],
+                "correct": 0,
+                "clue": "Catalase +"
+              },
+              {
+                "name": "Coagulase Test",
+                "tag": "coagulase",
+                "procedure": "Mix colony with rabbit plasma on a slide. Observe for clumping within 10 seconds.",
+                "result": "Positive — clumping observed (bound coagulase/clumping factor)",
+                "interpretation": "Identifies Staphylococcus aureus. Coagulase-negative staphylococci (like S. epidermidis) do not produce coagulase.",
+                "question": "The slide coagulase test shows rapid clumping when mixed with rabbit plasma. What does this identify?",
+                "options": ["Staphylococcus aureus", "Staphylococcus epidermidis", "Streptococcus pyogenes", "Enterococcus faecalis"],
+                "correct": 0,
+                "clue": "Coagulase +"
+              }
+            ],
+            "finalChoices": ["Staphylococcus aureus", "Staphylococcus epidermidis", "Streptococcus pyogenes", "Escherichia coli"],
+            "correctOrganism": "Staphylococcus aureus",
+            "clinicalRelevance": "S. aureus is a common cause of skin and soft tissue infections. It is part of normal skin flora but can cause serious infections when introduced into deeper tissues. The 'danger triangle of the face' (from the corners of the mouth to the bridge of the nose) is especially risky because veins in this area can carry bacteria directly to the brain. That's why you should never pop pimples in this area!",
+            "decisionTree": [
+              { "step": "Gram Stain", "result": "Gram-positive cocci in clusters", "branches": ["Staphylococcus", "Streptococcus"] },
+              { "step": "Catalase", "result": "Positive", "branches": ["Staphylococcus aureus", "Coagulase-negative Staph"] },
+              { "step": "Coagulase", "result": "Positive", "branches": ["S. aureus confirmed"] }
+            ]
+          }
+        },
+        {
+          "id": "colin",
+          "title": "Burger Mystery Colin",
+          "displayTitle": "The Burger Mystery",
+          "nickname": "Colin",
+          "avatar": "C",
+          "avatarColor": "#4ECDC4",
+          "severity": "High",
+          "short": "Severe stomach cramps and diarrhea after eating a pink burger",
+          "description": "After a basketball game, 14-year-old Colin stopped at a busy food stand and ordered a burger loaded with lettuce and onions. He noticed the patty was a little pink in the middle, but he was hungry and ate it anyway. About three days later, he woke up with severe stomach cramps, nausea, and repeated diarrhea. By that evening, he felt so weak that his parents took him to the clinic. After confirming that he had eaten a burger with potentially undercooked ground beef or contaminated lettuce or onions, a stool sample was collected and sent to the lab.",
+          "keySymptoms": ["Severe stomach cramps", "Repeated diarrhea", "Nausea & weakness"],
+          "symptoms": ["Severe stomach cramps", "Nausea", "Repeated diarrhea", "Weakness", "History of eating undercooked burger"],
+          "keyFeatures": ["Gram-negative bacilli", "Oxidase negative", "Indole positive", "Lactose-fermenting on MacConkey"],
+          "patient": {
+            "name": "Colin",
+            "age": 14,
+            "sex": "Male",
+            "chiefComplaint": "Severe stomach cramps, nausea, and repeated diarrhea starting 3 days after eating an undercooked cheeseburger",
+            "history": "After a basketball game, Colin ate a cheeseburger that was pink in the middle from a food stand. Three days later, developed severe stomach cramps, nausea, and repeated diarrhea. By evening, felt so weak his parents brought him to the clinic."
+          },
+          "lab": {
+            "culturePlate": {
+              "medium": "MacConkey Agar",
+              "appearance": "Large, pink (lactose-fermenting) colonies with a mucoid texture.",
+              "hemolysis": "N/A (MacConkey is selective/differential, not blood-based)"
+            },
+            "gramStain": {
+              "morphology": "Gram-negative bacilli (rods)",
+              "color": "pink",
+              "shape": "bacilli",
+              "question": "The Gram stain reveals pink rod-shaped organisms. QC controls show expected results. How would you interpret this?",
+              "options": ["Gram-negative bacilli", "Gram-positive bacilli", "Gram-negative cocci", "Gram-positive cocci in chains"],
+              "correct": 0,
+              "clue": "Gram−, bacilli (rods)"
+            },
+            "biochemTests": [
+              {
+                "name": "Oxidase Test",
+                "tag": "oxidase",
+                "procedure": "Touch a colony to oxidase reagent strip (tetramethyl-p-phenylenediamine).",
+                "result": "Negative — no color change within 10 seconds",
+                "interpretation": "Helps rule out Pseudomonas and other oxidase-positive organisms. Consistent with Enterobacteriaceae.",
+                "question": "The oxidase test shows no color change after 10 seconds. What does this negative result help rule out?",
+                "options": ["Pseudomonas and other oxidase-positive organisms", "All Enterobacteriaceae", "Escherichia coli specifically", "Gram-positive organisms"],
+                "correct": 0,
+                "clue": "Oxidase −"
+              },
+              {
+                "name": "Indole Test",
+                "tag": "indole",
+                "procedure": "Inoculate peptone broth, incubate, then add Kovac's reagent.",
+                "result": "Positive — cherry-red ring at the surface",
+                "interpretation": "Indicates the organism can break down tryptophan to indole. E. coli is classically indole-positive.",
+                "question": "After adding Kovac's reagent, a cherry-red ring appears at the surface. This positive indole test is classic for which organism?",
+                "options": ["Escherichia coli", "Klebsiella pneumoniae", "Proteus mirabilis", "Pseudomonas aeruginosa"],
+                "correct": 0,
+                "clue": "Indole +"
+              }
+            ],
+            "finalChoices": ["Escherichia coli", "Pseudomonas aeruginosa", "Klebsiella pneumoniae", "Proteus mirabilis"],
+            "correctOrganism": "Escherichia coli",
+            "clinicalRelevance": "E. coli is a common cause of foodborne illness, especially from undercooked ground beef and contaminated produce. Some strains (like O157:H7) produce Shiga toxin, which can cause bloody diarrhea and potentially life-threatening hemolytic uremic syndrome (HUS) in children. Always cook ground beef to an internal temperature of 160°F (71°C)!",
+            "decisionTree": [
+              { "step": "Gram Stain", "result": "Gram-negative bacilli", "branches": ["Enterobacteriaceae", "Non-fermenters"] },
+              { "step": "Oxidase", "result": "Negative", "branches": ["E. coli", "Klebsiella", "Proteus"] },
+              { "step": "Indole", "result": "Positive", "branches": ["E. coli confirmed"] }
+            ]
+          }
+        },
+        {
+          "id": "lisa",
+          "title": "Ice Cream Lisa",
+          "displayTitle": "Sweet Treat, Sneaky Germ",
+          "nickname": "Lisa",
+          "avatar": "L",
+          "avatarColor": "#8B5CF6",
+          "severity": "High",
+          "short": "Diarrhea, stomach cramps, and fever after eating ice cream",
+          "description": "After a long summer day, Lisa settled in for movie night and scooped herself a big bowl of Blue Bell ice cream from the freezer. It tasted completely normal, so she never imagined it could make her sick. A few days later, she began having diarrhea and stomach cramps. By the next morning, she also had a fever and a pounding headache that made it hard to get out of bed. The doctor collected her blood sample and sent it to the lab, and Lisa's family was told to save the leftover ice cream carton in case investigators needed to test it.",
+          "keySymptoms": ["Diarrhea", "Stomach cramps", "Fever", "Headache"],
+          "symptoms": ["Diarrhea", "Stomach cramps", "Fever", "Headache", "Symptoms appeared days after eating ice cream"],
+          "keyFeatures": ["Gram-positive bacilli", "Catalase positive", "Beta-hemolysis", "Motile at 25°C (tumbling motility)", "Growth at refrigerator temperatures"],
+          "patient": {
+            "name": "Lisa",
+            "age": 13,
+            "sex": "Female",
+            "chiefComplaint": "Diarrhea, stomach cramps, fever, and headache a few days after eating ice cream",
+            "history": "Lisa ate Blue Bell ice cream that tasted normal. A few days later she developed diarrhea, stomach cramps, fever, and a pounding headache. Blood sample collected. Family told to save the ice cream carton for testing."
+          },
+          "lab": {
+            "culturePlate": {
+              "medium": "Blood Agar",
+              "appearance": "Small, round, grayish-white colonies with a narrow zone of beta-hemolysis (clear zone around colonies). Colonies are small and can be easily overlooked.",
+              "hemolysis": "Beta (narrow zone)"
+            },
+            "gramStain": {
+              "morphology": "Gram-positive bacilli (short rods)",
+              "color": "purple",
+              "shape": "bacilli",
+              "question": "The Gram stain shows purple short rod-shaped organisms. QC controls are within expected parameters. How would you interpret this?",
+              "options": ["Gram-positive bacilli", "Gram-negative bacilli", "Gram-positive cocci in chains", "Gram-negative cocci"],
+              "correct": 0,
+              "clue": "Gram+, bacilli (rods)"
+            },
+            "biochemTests": [
+              {
+                "name": "Catalase Test",
+                "tag": "catalase",
+                "procedure": "Place a drop of 3% hydrogen peroxide on a colony on a glass slide.",
+                "result": "Positive — bubbles produced immediately",
+                "interpretation": "The organism produces catalase enzyme. This rules out Streptococcus and Enterococcus species, which are catalase-negative.",
+                "question": "The catalase test is positive (bubbles). For Gram-positive bacilli, this helps narrow the identification. Which organism is a catalase-positive Gram-positive rod associated with foodborne illness?",
+                "options": ["Listeria monocytogenes", "Streptococcus pyogenes", "Enterococcus faecalis", "Clostridium perfringens"],
+                "correct": 0,
+                "clue": "Catalase +"
+              },
+              {
+                "name": "Motility Test (25°C)",
+                "tag": "motility",
+                "procedure": "Inoculate motility agar tube, incubate at 25°C for 24-48 hours.",
+                "result": "Positive — characteristic tumbling motility, umbrella-shaped growth pattern spreading away from the stab line",
+                "interpretation": "Listeria is unique because it is motile at room temperature (25°C) but not at body temperature (37°C). This 'tumbling motility' is a classic diagnostic feature.",
+                "question": "The motility test at 25°C shows an umbrella-shaped growth pattern. This tumbling motility at room temperature is characteristic of which organism?",
+                "options": ["Listeria monocytogenes", "Corynebacterium diphtheriae", "Bacillus cereus", "Erysipelothrix rhusiopathiae"],
+                "correct": 0,
+                "clue": "Motile at 25°C (tumbling)"
+              },
+              {
+                "name": "Cold Enrichment",
+                "tag": "cold",
+                "procedure": "A sample of the leftover ice cream was cultured at 4°C (refrigerator temperature) for several days.",
+                "result": "Positive — growth detected at refrigerator temperature",
+                "interpretation": "Most bacteria cannot grow at 4°C, but Listeria thrives at cold temperatures. This is why contaminated refrigerated foods like ice cream, deli meats, and soft cheeses are common sources of Listeria outbreaks.",
+                "question": "The ice cream sample grew bacteria at 4°C (refrigerator temperature). Which organism is known for its ability to grow at cold temperatures, making refrigerated foods a risk?",
+                "options": ["Listeria monocytogenes", "Salmonella enteritidis", "Escherichia coli", "Staphylococcus aureus"],
+                "correct": 0,
+                "clue": "Grows at 4°C"
+              }
+            ],
+            "finalChoices": ["Listeria monocytogenes", "Salmonella enteritidis", "Bacillus cereus", "Escherichia coli"],
+            "correctOrganism": "Listeria monocytogenes",
+            "clinicalRelevance": "Listeria monocytogenes is a Gram-positive bacterium that can grow at refrigerator temperatures, making contaminated ready-to-eat foods like ice cream, deli meats, and soft cheeses particularly dangerous. In 2015, Blue Bell Creameries had a major recall due to Listeria contamination. While healthy people may experience mild gastroenteritis, Listeria is especially dangerous for pregnant women, newborns, the elderly, and immunocompromised individuals, where it can cause meningitis and septicemia. The characteristic tumbling motility at 25°C and ability to grow in the cold are key laboratory clues!",
+            "decisionTree": [
+              { "step": "Gram Stain", "result": "Gram-positive bacilli (short rods)", "branches": ["Listeria", "Corynebacterium", "Bacillus"] },
+              { "step": "Catalase", "result": "Positive", "branches": ["Listeria", "Bacillus"] },
+              { "step": "Motility at 25°C", "result": "Positive (tumbling, umbrella pattern)", "branches": ["Listeria monocytogenes"] },
+              { "step": "Cold Enrichment", "result": "Growth at 4°C from ice cream sample", "branches": ["L. monocytogenes confirmed"] }
+            ]
+          }
+        },
+        {
+          "id": "mona",
+          "title": "Swimming Pool Mona",
+          "displayTitle": "The Swimming Pool Case",
+          "nickname": "Mona",
+          "avatar": "M",
+          "avatarColor": "#38BDF8",
+          "severity": "Medium",
+          "short": "Ear pain and itchy rash after swimming in a hotel pool",
+          "description": "On vacation, 13-year-old Mona spent nearly the whole afternoon in a hotel swimming pool and later soaked in the hot tub with her friends. Two days later, her outer ear hurt whenever she touched it, and she developed itchy red bumps on the skin covered by her swimsuit. At urgent care, the clinician suspected a water-related infection and collected one swab from her ear canal and another swab from the rash, then sent both to the lab.",
+          "keySymptoms": ["Painful outer ear", "Itchy red bumps", "History of pool/hot tub use"],
+          "symptoms": ["Outer ear pain on touch", "Itchy red bumps on skin under swimsuit", "Spent afternoon in hotel pool and hot tub", "Symptoms appeared 2 days after swimming"],
+          "keyFeatures": ["Gram-negative bacilli", "Oxidase positive", "Blue-green pigment (pyocyanin)", "Fruity/grape-like odor"],
+          "patient": {
+            "name": "Mona",
+            "age": 13,
+            "sex": "Female",
+            "chiefComplaint": "Painful outer ear and itchy red bumps on skin 2 days after swimming in a hotel pool and hot tub",
+            "history": "On vacation, Mona spent the afternoon in a hotel swimming pool and soaked in the hot tub. Two days later, her outer ear hurt when touched and she developed itchy red bumps on skin covered by her swimsuit. Clinician suspects water-related infection."
+          },
+          "lab": {
+            "culturePlate": {
+              "medium": "Blood Agar and MacConkey Agar",
+              "appearance": "On BAP: large, flat, spreading colonies with metallic sheen and beta-hemolysis. Distinctive fruity/grape-like odor. On MacConkey: non-lactose-fermenting (colorless) colonies. Blue-green pigment visible.",
+              "hemolysis": "Beta"
+            },
+            "gramStain": {
+              "morphology": "Gram-negative bacilli (rods), singly or in pairs",
+              "color": "pink",
+              "shape": "bacilli",
+              "question": "The Gram stain reveals pink rod-shaped organisms appearing singly and in pairs. QC controls are acceptable. How would you interpret this?",
+              "options": ["Gram-negative bacilli", "Gram-positive bacilli", "Gram-negative cocci", "Gram-positive cocci in clusters"],
+              "correct": 0,
+              "clue": "Gram−, bacilli (rods)"
+            },
+            "biochemTests": [
+              {
+                "name": "Oxidase Test",
+                "tag": "oxidase",
+                "procedure": "Touch a colony to oxidase reagent strip.",
+                "result": "Positive — dark purple color within 10 seconds",
+                "interpretation": "Pseudomonas aeruginosa is oxidase-positive, distinguishing it from Enterobacteriaceae (which are oxidase-negative).",
+                "question": "The oxidase test turns dark purple within 10 seconds. This positive result distinguishes the organism from which group?",
+                "options": ["Enterobacteriaceae (which are oxidase-negative)", "Staphylococcus species", "All Gram-negative bacteria", "Streptococcus species"],
+                "correct": 0,
+                "clue": "Oxidase +"
+              },
+              {
+                "name": "Pigment Production",
+                "tag": "pigment",
+                "procedure": "Observe growth on Mueller-Hinton agar for pigment production after 24-48h incubation.",
+                "result": "Blue-green (pyocyanin) and yellow-green (fluorescein) pigments observed",
+                "interpretation": "Pyocyanin production is unique to P. aeruginosa among clinically relevant Pseudomonas species.",
+                "question": "Blue-green (pyocyanin) and yellow-green (fluorescein) pigments are visible on the agar. Which organism uniquely produces pyocyanin?",
+                "options": ["Pseudomonas aeruginosa", "Acinetobacter baumannii", "Stenotrophomonas maltophilia", "Burkholderia cepacia"],
+                "correct": 0,
+                "clue": "Pyocyanin pigment +"
+              },
+              {
+                "name": "Growth at 42°C",
+                "tag": "growth-42c",
+                "procedure": "Incubate a subculture at 42°C for 24 hours.",
+                "result": "Growth observed at 42°C",
+                "interpretation": "P. aeruginosa can grow at 42°C, which distinguishes it from most other Pseudomonas species.",
+                "question": "Growth is observed at 42°C after 24 hours. What does this help distinguish?",
+                "options": ["P. aeruginosa from other Pseudomonas species", "All Gram-negative organisms", "Aerobic from anaerobic bacteria", "Pathogenic from non-pathogenic strains"],
+                "correct": 0,
+                "clue": "Growth at 42°C +"
+              }
+            ],
+            "finalChoices": ["Pseudomonas aeruginosa", "Acinetobacter baumannii", "Escherichia coli", "Staphylococcus aureus"],
+            "correctOrganism": "Pseudomonas aeruginosa",
+            "clinicalRelevance": "P. aeruginosa loves warm, moist environments — including poorly maintained swimming pools and hot tubs! It causes 'swimmer's ear' (otitis externa) and 'hot tub folliculitis' (itchy bumps from contaminated water). The blue-green pigment (pyocyanin) and grape-like odor are classic clues. Good pool maintenance with proper chlorine levels prevents these infections!",
+            "decisionTree": [
+              { "step": "Gram Stain", "result": "Gram-negative bacilli", "branches": ["Enterobacteriaceae", "Non-fermenters"] },
+              { "step": "Oxidase", "result": "Positive", "branches": ["Pseudomonas", "Acinetobacter"] },
+              { "step": "Pigment", "result": "Pyocyanin (blue-green)", "branches": ["P. aeruginosa confirmed"] }
+            ]
+          }
+        },
+        {
+          "id": "vishal",
+          "title": "Beach Wound Vishal",
+          "displayTitle": "The Galveston Beach Wound",
+          "nickname": "Vishal",
+          "avatar": "V",
+          "avatarColor": "#0EA5E9",
+          "severity": "High",
+          "short": "Infected wound after swimming at Galveston beach with an open cut",
+          "description": "Vishal had scraped his arm on a rough boardwalk railing. It looked like a tiny cut, so he rinsed it off, slapped on a bandage, and spent the afternoon swimming at Galveston beach anyway. Two days later, the small scrape looked completely different. The skin around it had turned red and swollen, the area was painful and warm to the touch, and even the sleeve of a T-shirt brushing against it made him wince. After hearing about the recent swim in Galveston with an open cut, the doctor suspected a wound infection and collected a sample from the lesion for lab testing.",
+          "keySymptoms": ["Red swollen wound", "Painful and warm to touch", "History of ocean swimming with open cut"],
+          "symptoms": ["Redness and swelling around scrape", "Painful and warm to touch", "Sensitive even to light contact", "Swam in Galveston beach with open wound", "Symptoms appeared 2 days after swimming"],
+          "keyFeatures": ["Gram-negative curved rods", "Oxidase positive", "Growth on TCBS agar (green colonies)", "Halophilic (salt-loving)"],
+          "patient": {
+            "name": "Vishal",
+            "age": 14,
+            "sex": "Male",
+            "chiefComplaint": "Red, swollen, painful wound on arm 2 days after swimming at Galveston beach with a scrape",
+            "history": "Vishal scraped his arm on a boardwalk railing, bandaged it, then went swimming at Galveston beach. Two days later the wound became red, swollen, painful, and warm. Doctor suspects wound infection from saltwater exposure."
+          },
+          "lab": {
+            "culturePlate": {
+              "medium": "Blood Agar and TCBS Agar",
+              "appearance": "On blood agar: beta-hemolytic, round, opaque colonies. On TCBS (Thiosulfate Citrate Bile Salts Sucrose) agar: green colonies, indicating the organism does not ferment sucrose. TCBS is a selective medium for Vibrio species.",
+              "hemolysis": "Beta"
+            },
+            "gramStain": {
+              "morphology": "Gram-negative curved rods (comma-shaped)",
+              "color": "pink",
+              "shape": "bacilli",
+              "question": "The Gram stain shows pink comma-shaped (curved) rod organisms. QC controls are within expected parameters. How would you interpret this?",
+              "options": ["Gram-negative curved rods", "Gram-positive bacilli", "Gram-negative cocci", "Gram-positive cocci in chains"],
+              "correct": 0,
+              "clue": "Gram−, curved rods"
+            },
+            "biochemTests": [
+              {
+                "name": "Oxidase Test",
+                "tag": "oxidase",
+                "procedure": "Touch a colony to oxidase reagent strip.",
+                "result": "Positive — dark purple color change within 10 seconds",
+                "interpretation": "Vibrio species are oxidase-positive. This, combined with the curved rod morphology and saltwater exposure history, strongly suggests a Vibrio infection.",
+                "question": "The oxidase test is positive. Combined with Gram-negative curved rods from a saltwater wound, which group of organisms is most likely?",
+                "options": ["Vibrio species (oxidase +, curved rods)", "Enterobacteriaceae (oxidase −)", "Staphylococcus (Gram-positive)", "Pseudomonas (straight rods)"],
+                "correct": 0,
+                "clue": "Oxidase +"
+              },
+              {
+                "name": "TCBS Agar",
+                "tag": "tcbs",
+                "procedure": "Streak the organism on TCBS (Thiosulfate Citrate Bile Salts Sucrose) agar. Incubate at 35°C for 18-24 hours.",
+                "result": "Green colonies — the organism does NOT ferment sucrose",
+                "interpretation": "On TCBS agar, Vibrio vulnificus produces green colonies (sucrose non-fermenter), while Vibrio cholerae produces yellow colonies (sucrose fermenter). This distinction helps identify the species.",
+                "question": "On TCBS agar, the colonies are green (not yellow). This indicates the organism does not ferment sucrose. Which Vibrio species is a non-sucrose fermenter commonly associated with wound infections from saltwater?",
+                "options": ["Vibrio vulnificus (green on TCBS)", "Vibrio cholerae (yellow on TCBS)", "Vibrio parahaemolyticus", "Aeromonas hydrophila"],
+                "correct": 0,
+                "clue": "TCBS green (non-sucrose)"
+              },
+              {
+                "name": "Salt Tolerance (NaCl Growth)",
+                "tag": "halophilic",
+                "procedure": "Inoculate the organism into nutrient broth with varying NaCl concentrations (0%, 3%, 6%, 8%). Incubate and observe growth.",
+                "result": "Growth in 3% and 6% NaCl but NOT in 0% NaCl — the organism requires salt to grow",
+                "interpretation": "Vibrio vulnificus is halophilic (salt-loving) and requires NaCl for growth. This is why it thrives in warm coastal saltwater like the Gulf of Mexico and is associated with wound infections from ocean exposure.",
+                "question": "The organism grows in 3-6% NaCl but not in 0% NaCl. This salt-requiring (halophilic) nature is characteristic of which organism found in warm coastal waters?",
+                "options": ["Vibrio vulnificus", "Escherichia coli", "Pseudomonas aeruginosa", "Staphylococcus aureus"],
+                "correct": 0,
+                "clue": "Halophilic (needs salt)"
+              }
+            ],
+            "finalChoices": ["Vibrio vulnificus", "Pseudomonas aeruginosa", "Staphylococcus aureus", "Aeromonas hydrophila"],
+            "correctOrganism": "Vibrio vulnificus",
+            "clinicalRelevance": "Vibrio vulnificus is a Gram-negative bacterium that lives in warm coastal saltwater, especially the Gulf of Mexico. It can cause serious wound infections when an open cut is exposed to seawater or raw shellfish. In the Houston/Galveston area, Vibrio wound infections are reported every summer. The bacteria is halophilic (salt-loving), which is why it grows in saltwater but not fresh water. In severe cases, the infection can spread rapidly and become life-threatening, especially in people with liver disease or weakened immune systems. This is why doctors always ask about saltwater exposure when they see an infected wound!",
+            "decisionTree": [
+              { "step": "Gram Stain", "result": "Gram-negative curved rods", "branches": ["Vibrio", "Campylobacter", "Helicobacter"] },
+              { "step": "Oxidase", "result": "Positive", "branches": ["Vibrio", "Pseudomonas"] },
+              { "step": "TCBS Agar", "result": "Green colonies (non-sucrose fermenter)", "branches": ["V. vulnificus", "V. parahaemolyticus"] },
+              { "step": "Salt Tolerance", "result": "Halophilic (requires NaCl)", "branches": ["V. vulnificus confirmed"] }
+            ]
+          }
+        },
+        {
+          "id": "stephanie",
+          "title": "Sore Throat Stephanie",
+          "displayTitle": "The Sore Throat Case",
+          "nickname": "Stephanie",
+          "avatar": "S",
+          "avatarColor": "#E879F9",
+          "severity": "Medium",
+          "short": "Fever, severe sore throat, and yellowish plaques on tonsils",
+          "description": "Stephanie had felt exhausted all day at school. By last period, her head was pounding, her body felt warm, and even swallowing water made her throat hurt. That evening, her fever climbed higher, and she curled up on the couch instead of finishing her homework. The next morning, her throat looked bright red, and when her mom shined a light into her mouth, she noticed yellowish plaques on Stephanie's tonsils. Because Stephanie also had a fever, headache, trouble swallowing, and extreme tiredness, the doctor suspected a bacterial throat infection rather than an ordinary cold.",
+          "keySymptoms": ["Severe sore throat", "Fever", "Yellowish plaques on tonsils", "Headache"],
+          "symptoms": ["Severe sore throat", "High fever", "Yellowish plaques on tonsils", "Pounding headache", "Difficulty swallowing", "Extreme tiredness"],
+          "keyFeatures": ["Gram-positive cocci in chains", "Catalase negative", "Beta-hemolysis", "Bacitracin susceptible", "PYR positive"],
+          "patient": {
+            "name": "Stephanie",
+            "age": 14,
+            "sex": "Female",
+            "chiefComplaint": "Severe sore throat, fever, headache, difficulty swallowing, and yellowish tonsillar plaques",
+            "history": "Stephanie felt exhausted at school with a pounding headache and painful swallowing. By evening her fever climbed higher. The next morning her throat was bright red with yellowish plaques on her tonsils. Doctor suspects bacterial throat infection."
+          },
+          "lab": {
+            "culturePlate": {
+              "medium": "Sheep Blood Agar",
+              "appearance": "Small, round, translucent colonies surrounded by a wide, clear zone of beta-hemolysis (complete destruction of red blood cells). Colonies are pinpoint to small in size.",
+              "hemolysis": "Beta (wide clear zone)"
+            },
+            "gramStain": {
+              "morphology": "Gram-positive cocci in chains",
+              "color": "purple",
+              "shape": "cocci-chains",
+              "question": "The Gram stain shows purple spherical organisms arranged in chains. QC controls are within expected parameters. How would you interpret this?",
+              "options": ["Gram-positive cocci in chains", "Gram-positive cocci in clusters", "Gram-negative bacilli", "Gram-positive bacilli"],
+              "correct": 0,
+              "clue": "Gram+, cocci in chains"
+            },
+            "biochemTests": [
+              {
+                "name": "Catalase Test",
+                "tag": "catalase",
+                "procedure": "Place a drop of 3% hydrogen peroxide on a colony on a glass slide.",
+                "result": "Negative — no bubbles produced",
+                "interpretation": "The organism does NOT produce catalase. This rules out Staphylococcus (catalase +) and confirms the organism is in the Streptococcus or Enterococcus group.",
+                "question": "No bubbles are produced with hydrogen peroxide. This catalase-negative result rules out which genus?",
+                "options": ["Staphylococcus (catalase +)", "Streptococcus (also catalase −)", "Escherichia (Gram-negative)", "Bacillus (spore-forming)"],
+                "correct": 0,
+                "clue": "Catalase −"
+              },
+              {
+                "name": "Bacitracin Susceptibility (A Disk)",
+                "tag": "bacitracin",
+                "procedure": "Place a bacitracin disk (A disk) on a blood agar plate streaked with the organism. Incubate at 35°C for 18-24 hours.",
+                "result": "Susceptible — zone of inhibition around the disk",
+                "interpretation": "Group A Streptococcus (S. pyogenes) is susceptible to bacitracin, while Group B Streptococcus (S. agalactiae) is resistant. This is a classic presumptive test for identifying Group A Strep.",
+                "question": "The organism shows a zone of inhibition around the bacitracin (A) disk. Which beta-hemolytic Streptococcus is characteristically susceptible to bacitracin?",
+                "options": ["Streptococcus pyogenes (Group A — bacitracin susceptible)", "Streptococcus agalactiae (Group B — bacitracin resistant)", "Enterococcus faecalis", "Streptococcus pneumoniae"],
+                "correct": 0,
+                "clue": "Bacitracin susceptible (Group A)"
+              },
+              {
+                "name": "Rapid Strep Latex Agglutination",
+                "tag": "strep-latex",
+                "procedure": "Extract the Lancefield group antigen from colonies and mix with latex beads coated with Group A antibodies.",
+                "result": "Positive — agglutination (clumping) observed with Group A latex reagent",
+                "interpretation": "The Lancefield grouping confirms this is a Group A Streptococcus. S. pyogenes is the only species in Lancefield Group A and is the most common cause of bacterial pharyngitis (strep throat) in school-age children.",
+                "question": "Latex agglutination is positive with Group A antibodies. Combined with beta-hemolysis, Gram-positive cocci in chains, catalase-negative, and bacitracin susceptibility, what is the organism?",
+                "options": ["Streptococcus pyogenes (Group A Strep)", "Streptococcus agalactiae (Group B Strep)", "Staphylococcus aureus", "Streptococcus pneumoniae"],
+                "correct": 0,
+                "clue": "Strep Latex Group A +"
+              }
+            ],
+            "finalChoices": ["Streptococcus pyogenes", "Staphylococcus aureus", "Streptococcus pneumoniae", "Corynebacterium diphtheriae"],
+            "correctOrganism": "Streptococcus pyogenes",
+            "clinicalRelevance": "Streptococcus pyogenes (Group A Strep) is the #1 cause of bacterial pharyngitis — better known as strep throat. It's extremely common in school-age children and spreads through respiratory droplets. If untreated, strep throat can lead to serious complications like rheumatic fever (which can damage the heart) and post-streptococcal glomerulonephritis (kidney inflammation). This is why doctors test for strep when a sore throat comes with fever and tonsillar exudates, and why antibiotics are prescribed — not just to feel better faster, but to prevent these dangerous complications!",
+            "decisionTree": [
+              { "step": "Gram Stain", "result": "Gram-positive cocci in chains", "branches": ["Streptococcus", "Enterococcus"] },
+              { "step": "Catalase", "result": "Negative", "branches": ["Streptococcus (not Staphylococcus)"] },
+              { "step": "Hemolysis", "result": "Beta-hemolysis (wide clear zone)", "branches": ["Group A Strep", "Group B Strep"] },
+              { "step": "Bacitracin", "result": "Susceptible", "branches": ["S. pyogenes (Group A)"] },
+              { "step": "Strep Latex", "result": "Group A positive", "branches": ["S. pyogenes confirmed"] }
+            ]
+          }
+        },
+        {
+          "id": "coco",
+          "title": "Pink Eye Coco",
+          "displayTitle": "The Pink Eye Case",
+          "nickname": "Coco",
+          "avatar": "C",
+          "avatarColor": "#F59E0B",
+          "severity": "Medium",
+          "short": "Pink, irritated eye with sticky discharge after sharing makeup",
+          "description": "Coco was getting ready for a school dance with her friends. Everyone crowded around the mirror, sharing lip gloss, blush, and makeup brushes to create the perfect look. After her performance, she was so exhausted that she fell asleep without removing her makeup. The next morning, Coco woke up with her right eye pink and irritated, with sticky discharge dried on her eyelashes overnight. By lunchtime, her eye had become even redder, and the bright classroom lights made it feel worse. The doctor collected a swab from Coco's eye and sent it to the lab, explaining that pink eye can spread through shared personal items and lead to bacterial conjunctivitis.",
+          "keySymptoms": ["Pink/red eye", "Sticky discharge", "Light sensitivity", "History of sharing makeup"],
+          "symptoms": ["Pink and irritated right eye", "Sticky discharge on eyelashes", "Increasing redness", "Light sensitivity", "Shared makeup brushes and lip gloss", "Slept with makeup on"],
+          "keyFeatures": ["Gram-positive diplococci (lancet-shaped)", "Alpha-hemolysis", "Catalase negative", "Optochin susceptible", "Bile soluble"],
+          "patient": {
+            "name": "Coco",
+            "age": 14,
+            "sex": "Female",
+            "chiefComplaint": "Pink, irritated right eye with sticky discharge and light sensitivity after sharing makeup at a school dance",
+            "history": "Coco shared makeup brushes and lip gloss with friends before a school dance. Fell asleep without removing makeup. Woke up with pink eye, sticky discharge, increasing redness, and light sensitivity. Doctor suspects bacterial conjunctivitis from shared personal items."
+          },
+          "lab": {
+            "culturePlate": {
+              "medium": "Sheep Blood Agar and Chocolate Agar",
+              "appearance": "On blood agar: small, round, glistening colonies with a greenish zone of alpha-hemolysis (partial destruction of red blood cells — green discoloration). Grows better on chocolate agar in CO₂. Mucoid (wet, shiny) colonies due to polysaccharide capsule.",
+              "hemolysis": "Alpha (green zone)"
+            },
+            "gramStain": {
+              "morphology": "Gram-positive diplococci (lancet-shaped pairs)",
+              "color": "purple",
+              "shape": "cocci-chains",
+              "question": "The Gram stain shows purple oval-shaped organisms arranged in pairs (diplococci) with a lancet or flame shape. QC controls are within expected parameters. How would you interpret this?",
+              "options": ["Gram-positive diplococci (lancet-shaped)", "Gram-positive cocci in clusters", "Gram-negative diplococci", "Gram-positive bacilli"],
+              "correct": 0,
+              "clue": "Gram+, diplococci (lancet)"
+            },
+            "biochemTests": [
+              {
+                "name": "Catalase Test",
+                "tag": "catalase",
+                "procedure": "Place a drop of 3% hydrogen peroxide on a colony on a glass slide.",
+                "result": "Negative — no bubbles produced",
+                "interpretation": "The organism does NOT produce catalase, confirming it is in the Streptococcus family (not Staphylococcus).",
+                "question": "No bubbles are produced with hydrogen peroxide. This catalase-negative result, combined with alpha-hemolytic diplococci, suggests which group?",
+                "options": ["Streptococcus (catalase −)", "Staphylococcus (catalase +)", "Neisseria (Gram-negative)", "Bacillus (spore-forming)"],
+                "correct": 0,
+                "clue": "Catalase −"
+              },
+              {
+                "name": "Optochin (P Disk) Susceptibility",
+                "tag": "optochin",
+                "procedure": "Place an optochin (P) disk on a blood agar plate streaked with the organism. Incubate at 35°C in CO₂ for 18-24 hours.",
+                "result": "Susceptible — zone of inhibition ≥14mm around the P disk",
+                "interpretation": "Streptococcus pneumoniae is susceptible to optochin, while other alpha-hemolytic streptococci (like viridans group strep) are resistant. This is one of the key tests for presumptive identification of S. pneumoniae.",
+                "question": "The organism shows a wide zone of inhibition around the optochin (P) disk. Which alpha-hemolytic Streptococcus is characteristically susceptible to optochin?",
+                "options": ["Streptococcus pneumoniae (optochin susceptible)", "Viridans group streptococci (optochin resistant)", "Enterococcus faecalis", "Streptococcus pyogenes"],
+                "correct": 0,
+                "clue": "Optochin susceptible"
+              },
+              {
+                "name": "Bile Solubility Test",
+                "tag": "bile",
+                "procedure": "Add 10% sodium deoxycholate (bile salts) to a broth culture or directly onto colonies. Observe for clearing/lysis.",
+                "result": "Positive — colonies dissolve (lyse) when bile salts are added",
+                "interpretation": "S. pneumoniae is bile-soluble — its cell wall breaks apart when exposed to bile salts. This is a confirmatory test that distinguishes it from all other alpha-hemolytic streptococci, which are bile-insoluble.",
+                "question": "The colonies dissolve when bile salts are added. This bile-soluble result is a confirmatory test for which organism?",
+                "options": ["Streptococcus pneumoniae (bile soluble)", "Viridans group streptococci (bile insoluble)", "Staphylococcus aureus", "Escherichia coli"],
+                "correct": 0,
+                "clue": "Bile soluble"
+              }
+            ],
+            "finalChoices": ["Streptococcus pneumoniae", "Staphylococcus aureus", "Haemophilus influenzae", "Neisseria gonorrhoeae"],
+            "correctOrganism": "Streptococcus pneumoniae",
+            "clinicalRelevance": "Streptococcus pneumoniae (the pneumococcus) is one of the most common causes of bacterial conjunctivitis (pink eye), especially in children and teens. It spreads easily through direct contact and contaminated personal items like makeup, towels, and pillowcases. S. pneumoniae is also a leading cause of pneumonia, meningitis, and ear infections. The classic lab clues are alpha-hemolysis (green zone), lancet-shaped diplococci, optochin susceptibility, and bile solubility. This is why doctors always remind you: never share eye makeup, remove makeup before sleeping, and wash your hands to prevent spreading eye infections!",
+            "decisionTree": [
+              { "step": "Gram Stain", "result": "Gram-positive diplococci (lancet-shaped)", "branches": ["S. pneumoniae", "Viridans strep", "Enterococcus"] },
+              { "step": "Catalase", "result": "Negative", "branches": ["Streptococcus (not Staphylococcus)"] },
+              { "step": "Hemolysis", "result": "Alpha-hemolysis (green zone)", "branches": ["S. pneumoniae", "Viridans group"] },
+              { "step": "Optochin", "result": "Susceptible (≥14mm zone)", "branches": ["S. pneumoniae (presumptive)"] },
+              { "step": "Bile Solubility", "result": "Positive (colonies dissolve)", "branches": ["S. pneumoniae confirmed"] }
+            ]
+          }
+        }
+      ],
+      "clues": [
+        "Gram+", "Gram−", "Cocci", "Bacilli", "Clusters", "Chains",
+        "Catalase +", "Catalase −", "Coagulase +", "Coagulase −",
+        "Oxidase +", "Oxidase −", "Indole +", "Indole −",
+        "Urease +", "Pyocyanin +", "Beta-hemolysis", "Gamma-hemolysis",
+        "Swarming", "Novobiocin susceptible", "Growth at 42°C"
+      ],
+      "suspects": [
+        {
+          "name": "Staphylococcus aureus",
+          "traits": ["Gram+", "Cocci", "Clusters", "Catalase +", "Coagulase +", "Beta-hemolysis"],
+          "color": "#FF6B6B"
+        },
+        {
+          "name": "Escherichia coli",
+          "traits": ["Gram−", "Bacilli", "Oxidase −", "Indole +"],
+          "color": "#4ECDC4"
+        },
+        {
+          "name": "Pseudomonas aeruginosa",
+          "traits": ["Gram−", "Bacilli", "Oxidase +", "Pyocyanin +", "Growth at 42°C"],
+          "color": "#38BDF8"
+        },
+        {
+          "name": "Listeria monocytogenes",
+          "traits": ["Gram+", "Bacilli", "Catalase +", "Motile at 25°C", "Beta-hemolysis"],
+          "color": "#8B5CF6"
+        },
+        {
+          "name": "Vibrio vulnificus",
+          "traits": ["Gram−", "Curved rods", "Oxidase +", "Halophilic", "TCBS green"],
+          "color": "#0EA5E9"
+        },
+        {
+          "name": "Streptococcus pyogenes",
+          "traits": ["Gram+", "Cocci", "Chains", "Catalase −", "Beta-hemolysis", "Bacitracin susceptible"],
+          "color": "#E879F9"
+        },
+        {
+          "name": "Streptococcus pneumoniae",
+          "traits": ["Gram+", "Diplococci", "Lancet-shaped", "Catalase −", "Alpha-hemolysis", "Optochin susceptible", "Bile soluble"],
+          "color": "#F59E0B"
+        }
+      ],
+      "career": {
+        "title": "Medical Laboratory Science Career Path",
+        "roles": [
+          {
+            "title": "Medical Laboratory Scientist",
+            "description": "Perform complex analyses on blood, body fluids, and tissue samples. Work in hospital labs, reference labs, and research facilities.",
+            "icon": "microscope"
+          },
+          {
+            "title": "Laboratory Manager",
+            "description": "Oversee daily lab operations, staff scheduling, quality assurance programs, and regulatory compliance.",
+            "icon": "clipboard"
+          },
+          {
+            "title": "Research Scientist",
+            "description": "Develop new diagnostic tests, study disease mechanisms, and contribute to clinical trials.",
+            "icon": "flask"
+          }
+        ],
+        "education": [
+          {
+            "stage": "High School",
+            "years": "4 years",
+            "description": "Focus on biology, chemistry, math, and AP sciences. Volunteer or shadow in a hospital lab."
+          },
+          {
+            "stage": "Bachelor's Degree",
+            "years": "4 years",
+            "description": "Complete a NAACLS-accredited MLS program. Coursework in clinical chemistry, hematology, microbiology, immunohematology, and molecular diagnostics."
+          },
+          {
+            "stage": "Clinical Rotations",
+            "years": "1 year (included in BS)",
+            "description": "Hands-on training in a hospital laboratory rotating through all departments."
+          },
+          {
+            "stage": "Certification",
+            "years": "Exam after graduation",
+            "description": "Pass the the Board of Certification of the American Society of Clinical Pathologists (ASCP) exam to earn MLS credential."
+          }
+        ],
+        "specializations": [
+          { "name": "Clinical Microbiology", "description": "Identify infectious agents from patient specimens using culture, molecular, and serological methods." },
+          { "name": "Hematology / Coagulation", "description": "Analyze blood cells, diagnose anemias and leukemias, and perform coagulation testing." },
+          { "name": "Blood Bank / Transfusion Medicine", "description": "Type and crossmatch blood, manage blood inventory, and investigate transfusion reactions." },
+          { "name": "Clinical Chemistry", "description": "Run automated analyzers for metabolic panels, liver/kidney function tests, cardiac markers, and drug levels." },
+          { "name": "Molecular Diagnostics", "description": "Perform PCR, sequencing, and other molecular techniques for pathogen detection and genetic testing." }
+        ],
+        "salary": {
+          "entry": { "label": "Entry Level (0-2 yrs)", "amount": 47500},
+          "mid": { "label": "Mid Career (3-7 yrs)", "amount": 62500 },
+          "senior": { "label": "Senior/Specialist (8+ yrs)", "amount": 80000 },
+          "management": { "label": "Lab Manager/Director", "amount": 95000 }
+        },
+        "outlook": "Employment of medical laboratory scientists is projected to grow 7% through 2032, faster than average."
+      }
+    },
+    "mgt": { "name": "Medical Genetic Technology", "icon": "🧬", "color": "#e64980", "description": "Analyze genetic material to diagnose hereditary conditions.", "cases": [] },
+    "md": { "name": "Molecular Diagnostics", "icon": "🧪", "color": "#f76707", "description": "Use PCR, sequencing, and molecular techniques.", "cases": [] },
+    "htl": { "name": "Histotechnology", "icon": "🔬", "color": "#2b8a3e", "description": "Prepare tissue specimens for microscopic examination.", "cases": [] },
+    "di": {
+      "name": "Diagnostic Imaging",
+      "icon": "🩻",
+      "color": "#4E74BF",
+      "description": "Operate imaging equipment to produce diagnostic images.",
+      "cases": [],
+      "career": {
+        "title": "Diagnostic Imaging Career Path",
+        "roles": [
+          {
+            "title": "Radiologic Technologist (Radiographer)",
+            "description": "Produce X-ray images that radiologists use to diagnose injuries and disease. Position patients, adjust equipment, and ensure optimal image quality while minimizing radiation exposure.",
+            "icon": "xray"
+          },
+          {
+            "title": "CT / MRI Technologist",
+            "description": "Operate advanced cross-sectional imaging equipment to capture detailed 3D views of the body. Work closely with radiologists on complex diagnostic studies.",
+            "icon": "scanner"
+          },
+          {
+            "title": "Diagnostic Medical Sonographer",
+            "description": "Use high-frequency sound waves to image organs, blood vessels, and developing fetuses. A radiation-free modality widely used in obstetrics and cardiology.",
+            "icon": "wave"
+          }
+        ],
+        "education": [
+          {
+            "stage": "High School",
+            "years": "4 years",
+            "description": "Focus on biology, physics, chemistry, and anatomy. Shadow a radiologic technologist or volunteer in a hospital imaging department."
+          },
+          {
+            "stage": "Prerequisite Coursework",
+            "years": "1–2 years",
+            "description": "Complete college-level prerequisites required by the SHP Diagnostic Imaging program, including science, math, and general education courses. Minimum 2.50 GPA required."
+          },
+          {
+            "stage": "SHP Radiography Program",
+            "years": "3 years (full-time)",
+            "description": "Enroll in the Bachelor of Science in Diagnostic Imaging at MD Anderson School of Health Professions. The first 18 months follow the ASRT Radiography Curriculum with hands-on clinical rotations in the Texas Medical Center."
+          },
+          {
+            "stage": "ARRT Certification",
+            "years": "Exam after curriculum",
+            "description": "Pass the American Registry of Radiologic Technologists (ARRT) credentialing exam to become a certified radiographer, then choose a specialization to complete your degree."
+          }
+        ],
+        "specializations": [
+          { "name": "Computed Tomography (CT)", "description": "Perform advanced cross-sectional imaging using rotating X-ray beams to create detailed 3D images of organs, bones, and soft tissues." },
+          { "name": "CT & Vascular Interventional Radiography", "description": "Combine CT expertise with interventional procedures — image-guided biopsies, angiography, and minimally invasive vascular treatments." },
+          { "name": "Diagnostic Medical Sonography", "description": "Use ultrasound technology to produce real-time images of organs, blood flow, and fetal development. Radiation-free and widely used in obstetrics and cardiology." },
+          { "name": "Magnetic Resonance Imaging (MRI)", "description": "Operate powerful magnets and radio waves to capture highly detailed images of soft tissues, the brain, spine, and musculoskeletal system." },
+          { "name": "Education", "description": "Train the next generation of radiographers through classroom instruction, clinical mentoring, and curriculum development in academic programs." },
+          { "name": "Management", "description": "Lead imaging departments — oversee staff scheduling, quality assurance, regulatory compliance, equipment acquisition, and patient throughput." }
+        ],
+        "salary": {
+          "entry": { "label": "Entry Level (0-2 yrs)", "amount": 116000 },
+          "mid": { "label": "Mid Career (3-7 yrs)", "amount": 147000 },
+          "senior": { "label": "Senior/Specialist (8+ yrs)", "amount": 162000 },
+          "management": { "label": "Imaging Manager/Director", "amount": 359000 }
+        },
+        "outlook": "The U.S. Bureau of Labor Statistics predicts the job outlook for radiographers will grow 9% by 2030, reflecting strong nationwide demand across specialty modalities."
+      }
+    },
+    "ct": { "name": "Cytogenetic Technology", "icon": "🧫", "color": "#5c940d", "description": "Analyze chromosomes to detect genetic disorders.", "cases": [] }
+  }
+}

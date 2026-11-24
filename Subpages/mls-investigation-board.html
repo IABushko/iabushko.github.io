@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investigation Board – MLS – LearnWithMD</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="../state.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Inter:wght@700&family=Special+Elite&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Coming+Soon&display=swap" rel="stylesheet');
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #3b2d1f;
+      font-family: "Inter", system-ui, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* ── Top Nav ── */
+    .board-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: rgba(58,42,28,0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+    }
+    .board-nav a {
+      color: #d4b896;
+      font-size: 0.85rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .board-nav a:hover { color: #fff; }
+    .board-nav-title {
+      font-family: 'Special Elite', monospace;
+      color: #f5e6d0;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .board-progress-tag {
+      background: rgba(255,255,255,0.1);
+      padding: 3px 12px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      font-family: "Inter", system-ui, sans-serif;
+      color: #d4b896;
+    }
+
+    /* ── Menu Button ── */
+    .menu-btn {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+    }
+    .menu-btn span {
+      display: block;
+      width: 22px;
+      height: 2.5px;
+      background: #d4b896;
+      border-radius: 2px;
+      transition: background 0.2s;
+    }
+    .menu-btn:hover span { background: #fff; }
+
+    /* ── Side Panel (Notebook) ── */
+    .side-panel-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .side-panel-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .side-panel {
+      position: fixed;
+      top: 0;
+      right: -900px;
+      width: 880px;
+      height: 100vh;
+      z-index: 301;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      pointer-events: none;
+    }
+    .side-panel.open {
+      right: 0;
+      pointer-events: all;
+    }
+    .side-panel-img {
+      width: 95%;
+      max-height: 95vh;
+      object-fit: contain;
+      transform: rotate(-7deg);
+      filter: drop-shadow(-6px 8px 24px rgba(0,0,0,0.5));
+    }
+    .side-panel-close {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(58,42,28,0.85);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: #d4b896;
+      width: 36px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 302;
+      transition: background 0.2s;
+    }
+    .side-panel-close:hover {
+      background: rgba(58,42,28,1);
+      color: #fff;
+    }
+
+    /* ── Close-the-Case Popup ── */
+    .case-popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 400;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .case-popup-overlay.open {
+      display: flex;
+    }
+    .case-popup {
+      background: #fdf6e7;
+      border: 4px solid #5a3e24;
+      border-radius: 14px;
+      max-width: 460px;
+      width: 100%;
+      padding: 28px 28px 22px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+      position: relative;
+      transform: rotate(-1deg);
+    }
+    .case-popup h3 {
+      font-family: 'Special Elite', monospace;
+      font-size: 1.6rem;
+      color: #3a2a1c;
+      margin: 0 0 12px;
+      text-align: center;
+    }
+    .case-popup p {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.35rem;
+      color: #4a3520;
+      line-height: 1.45;
+      margin: 0 0 20px;
+      text-align: center;
+    }
+    .case-popup-btn {
+      display: block;
+      width: 100%;
+      background: #5a3e24;
+      color: #fdf6e7;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-family: 'Special Elite', monospace;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .case-popup-btn:hover {
+      background: #3a2a1c;
+    }
+
+    /* ── Cork Board (portrait, freeform canvas) ── */
+    .cork-board {
+      position: relative;
+      width: 100%;
+      max-width: 1400px;
+      min-height: 1200px;
+      margin: 20px auto;
+      background:
+        url('../Sources/mls-board/mls-investigationBoard.png') center / cover no-repeat;
+      border: 12px solid #5a3e24;
+      border-radius: 6px;
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.15), 0 8px 40px rgba(0,0,0,0.5);
+      overflow: hidden;
+      cursor: default;
+    }
+
+    /* ── SVG Connections Layer ── */
+    .connections-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .conn-line {
+      stroke-width: 3;
+      fill: none;
+      opacity: 0.75;
+      stroke-linecap: round;
+    }
+    .conn-line.pre-connected {
+      stroke: #ffffff;
+      stroke-width: 2;
+      opacity: 0.35;
+      stroke-dasharray: 6 4;
+    }
+    .conn-line.pre-connected.revealed {
+      stroke-width: 3;
+      opacity: 0.85;
+      stroke-dasharray: none;
+      transition: stroke 0.4s, opacity 0.4s, stroke-width 0.3s, stroke-dasharray 0.3s;
+    }
+    .conn-line-drawing {
+      stroke: #d4b896;
+      stroke-width: 3;
+      fill: none;
+      opacity: 0.5;
+      stroke-dasharray: 8 4;
+      stroke-linecap: round;
+    }
+
+    /* ── Correct connection animation ── */
+    .conn-line.correct-line {
+      stroke-width: 3;
+      opacity: 0.85;
+    }
+    @keyframes linePulse {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* ── Wrong connection animation ── */
+    .conn-line.wrong-line {
+      stroke: #e74c3c;
+      stroke-width: 3;
+      opacity: 0.8;
+      animation: lineSnap 0.5s ease-out forwards;
+    }
+    @keyframes lineSnap {
+      0%   { opacity: 0.8; }
+      30%  { opacity: 0.9; }
+      100% { opacity: 0; }
+    }
+    .canvas-item.shake-wrong {
+      animation: shakeEndpoint 0.4s ease-out;
+    }
+    @keyframes shakeEndpoint {
+      0%, 100% { transform: translateX(0); }
+      15%  { transform: translateX(-5px); }
+      30%  { transform: translateX(5px); }
+      45%  { transform: translateX(-4px); }
+      60%  { transform: translateX(4px); }
+      75%  { transform: translateX(-2px); }
+      90%  { transform: translateX(2px); }
+    }
+
+    /* ── Section Labels (pinned to board) ── */
+    .board-label {
+      position: absolute;
+      background: rgba(255,255,255,0.6);
+      padding: 4px 16px;
+      font-family: 'Special Elite', monospace;
+      font-size: 0.9rem;
+      color: #5a3e24;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* ── Draggable Canvas Item ── */
+    .canvas-item {
+      position: absolute;
+      z-index: 5;
+      cursor: grab;
+      transition: box-shadow 0.15s;
+    }
+    .canvas-item:active { cursor: grabbing; }
+    .canvas-item.dragging { z-index: 100; opacity: 0.92; }
+
+    /* ── Selection UI (FigJam-style) ── */
+    .canvas-item.selected {
+      z-index: 50;
+    }
+    .select-border {
+      display: none;
+      position: absolute;
+      inset: -4px;
+      border: 2px solid #4A90D9;
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 60;
+    }
+    .canvas-item.selected .select-border { display: block; }
+
+    /* Corner handles */
+    .corner-handle {
+      display: none;
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #fff;
+      border: 2px solid #4A90D9;
+      z-index: 61;
+      pointer-events: none;
+    }
+    .canvas-item.selected .corner-handle { display: block; }
+    .corner-handle.tl { top: -8px; left: -8px; }
+    .corner-handle.tr { top: -8px; right: -8px; }
+    .corner-handle.bl { bottom: -8px; left: -8px; }
+    .corner-handle.br { bottom: -8px; right: -8px; }
+
+    /* Connection dots (midpoints of each edge) */
+    .conn-dot {
+      display: none;
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #4A90D9;
+      border-radius: 50%;
+      z-index: 62;
+      cursor: crosshair;
+      pointer-events: all;
+      transform: translate(-50%, -50%);
+    }
+    .chalk-mode .conn-dot {
+      cursor: url('../Sources/mls-board/mls-investigation-redChalk.png') 2 28, crosshair;
+      pointer-events: none;
+    }
+    .chalk-mode .canvas-item:hover .conn-dot {
+      display: block;
+    }
+    .canvas-item.selected .conn-dot,
+    .canvas-item:hover .conn-dot { display: block; }
+    .conn-dot:hover {
+      width: 14px;
+      height: 14px;
+      background: #2B6CB0;
+      box-shadow: 0 0 6px rgba(74,144,217,0.5);
+    }
+    .conn-dot.top    { top: -4px; left: 50%; }
+    .conn-dot.bottom { bottom: -4px; left: 50%; transform: translate(-50%, 50%); }
+    .conn-dot.left   { left: -4px; top: 50%; transform: translate(-50%, -50%); }
+    .conn-dot.right  { right: -4px; top: 50%; transform: translate(50%, -50%); }
+
+    /* ── Polaroid (Patient Card) — square-ish ── */
+    .polaroid {
+      width: 130px;
+      background: #fff;
+      padding: 8px 8px 4px;
+      box-shadow: 2px 4px 12px rgba(0,0,0,0.5);
+    }
+    .polaroid-face {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .face-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #fff;
+      z-index: 2;
+    }
+    /* Profile image replaces colored circle */
+    .polaroid-face img.profile-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 2px;
+    }
+    .polaroid-caption {
+      font-size: 0.68rem;
+      color: #2d2015;
+      text-align: center;
+      margin-top: 4px;
+      margin-bottom: 0;
+      font-family: 'Special Elite', monospace;
+      line-height: 1.3;
+    }
+    .polaroid-caption .case-num {
+      color: #b56708;
+      font-size: 0.7rem;
+    }
+    .polaroid-caption .case-name {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #5a3e24;
+    }
+    .polaroid-btn {
+      display: block;
+      margin: 3px auto 8px;
+      padding: 5px 14px;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      font-family: 'Inter', bold;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+      text-align: center;
+    }
+    .polaroid-btn:hover { background: #333; }
+    .polaroid-btn.btn-solved {
+      background: #27ae60;
+    }
+    .polaroid-btn.btn-solved:hover { background: #219653; }
+    .solved-stamp {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-15deg);
+      font-family: 'Special Elite', monospace;
+      font-size: 1.1rem;
+      color: #27ae60;
+      border: 3px solid #27ae60;
+      padding: 3px 12px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      z-index: 15;
+      background: rgba(255,255,255,0.85);
+      pointer-events: none;
+    }
+
+    /* Pin */
+    .pin {
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #e74c3c, #c0392b);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.3);
+      z-index: 10;
+      pointer-events: none;
+    }
+    .pin.pin-green { background: radial-gradient(circle at 35% 35%, #37662D, #254a1e); }
+    .pin.pin-blue { background: radial-gradient(circle at 35% 35%, #2F20F4, #2119b8); }
+    .pin.pin-purple { background: radial-gradient(circle at 35% 35%, #9b59b6, #7d3c98); }
+    .pin.pin-yellow { background: radial-gradient(circle at 35% 35%, #f1c40f, #d4ac0d); }
+    .pin.pin-orange { background: radial-gradient(circle at 35% 35%, #FFA737, #E08A1E); }
+    .pin.pin-mint { background: radial-gradient(circle at 35% 35%, #7CDEDC, #5DB8A0); }
+    .pin.pin-pink { background: radial-gradient(circle at 35% 35%, #e91e8c, #c2185b); }
+    .pin.pin-brown { background: radial-gradient(circle at 35% 35%, #6d4c41, #4e342e); }
+
+    /* ── Clue Note ── */
+    .clue-note {
+      background: #fdf6e3;
+      padding: 8px 14px;
+      font-family: 'Coming Soon';
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #3b2d1f;
+      box-shadow: 1px 2px 5px rgba(0,0,0,0.15);
+      white-space: nowrap;
+      clip-path: polygon(
+        0% 3%, 8% 0%, 15% 4%, 25% 1%, 35% 3%, 45% 0%, 55% 4%, 65% 1%, 75% 3%, 85% 0%, 92% 3%, 100% 1%,
+        100% 97%, 92% 100%, 85% 96%, 75% 100%, 65% 97%, 55% 100%, 45% 96%, 35% 100%, 25% 97%, 15% 100%, 8% 97%, 0% 100%
+      );
+    }
+    .clue-note.clue-positive { background: #e8f8e8; color: #1a5928; }
+    .clue-note.clue-negative { background: #fde8e8; color: #7c1d1d; }
+    .clue-note.clue-gram { background: #FFF3E0; color: #8B5600; }
+
+    /* ── Suspect Card ── */
+    .suspect-card {
+      width: 130px;
+      background: #fff;
+      padding: 8px 8px 10px;
+      box-shadow: 2px 3px 8px rgba(0,0,0,0.7);
+    }
+    .suspect-img-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+
+    }
+    .suspect-img-wrap img {
+      width: 180%;
+      height: 180%;
+      object-fit: contain;
+    }
+
+    .suspect-card.identified .suspect-img-wrap {
+      border-color: #27ae60;
+    }
+
+    /* ── Chalk Tool Bar ── */
+    .toolbar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(58,42,28,0.95);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 10px 20px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+      z-index: 200;
+    }
+    .tool-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: "Inter", system-ui, sans-serif;
+      transition: background 0.15s;
+    }
+    .tool-btn.move-tool {
+      background: #6b4c30;
+      color: #f5e6d0;
+    }
+    .tool-btn.move-tool.active {
+      background: #FFA737;
+      color: #512500;
+    }
+    .tool-btn.chalk-tool {
+      background: #6b4c30;
+      color: #f5e6d0;
+    }
+    .tool-btn.chalk-tool.active {
+      background: #c0392b;
+      color: #fff;
+    }
+    .tool-btn:hover { filter: brightness(1.1); }
+    .tool-divider {
+      width: 1px;
+      height: 24px;
+      background: rgba(255,255,255,0.15);
+    }
+    .tool-btn.clear-btn {
+      background: transparent;
+      color: #d4b896;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .tool-btn.clear-btn:hover { background: rgba(255,255,255,0.06); }
+    .tool-btn.screenshot-tool {
+      background: #2d5a4a;
+      color: #e6f5ef;
+    }
+    .tool-btn.screenshot-tool:hover { background: #3a7361; }
+    .tool-btn.screenshot-tool:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ── Screenshot Countdown Overlay ── */
+    .countdown-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.25);
+      z-index: 500;
+      pointer-events: none;
+    }
+    .countdown-overlay.show { display: flex; }
+    .countdown-number {
+      font-family: 'Special Elite', monospace;
+      font-size: 12rem;
+      color: #fff;
+      text-shadow: 0 6px 24px rgba(0,0,0,0.6);
+      animation: countdownPulse 1s ease-out;
+    }
+    @keyframes countdownPulse {
+      0%   { transform: scale(0.4); opacity: 0; }
+      30%  { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── Cursor modes ── */
+    .cork-board.chalk-mode { cursor: url('../Sources/mls-board/mls-investigation-redChalk.png') 2 28, crosshair; }
+    .cork-board.chalk-mode .canvas-item,
+    .cork-board.chalk-mode .canvas-item:active,
+    .cork-board.chalk-mode .canvas-item *,
+    .cork-board.chalk-mode .polaroid-btn { cursor: url('../Sources/mls-investigation-redChalk.png') 2 28, crosshair; }
+
+    /* Empty state label */
+    .empty-label {
+      position: absolute;
+      font-family: 'Coming Soon';
+      font-size: 1rem;
+      color: #8b7355;
+      font-style: italic;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* ── Bacteria Sticker (reward overlay) ── */
+    .bac-sticker {
+      position: absolute;
+      z-index: 80;
+      cursor: grab;
+      opacity: 0;
+      transform: scale(0.3);
+      animation: stickerAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes stickerAppear {
+      0%   { opacity: 0; transform: scale(0.3) rotate(-10deg); }
+      60%  { opacity: 1; transform: scale(1.08) rotate(2deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+    .bac-sticker img {
+      width: 120px;
+      height: auto;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+    }
+    /* Shimmer overlay — masked to PNG silhouette */
+    .bac-sticker .shimmer-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 120px;
+      height: 100%;
+      background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255,255,255,0.45) 45%,
+        rgba(255,255,255,0.65) 50%,
+        rgba(255,255,255,0.45) 55%,
+        transparent 70%
+      );
+      background-size: 250% 100%;
+      animation: shimmer 2.5s ease-in-out infinite;
+      pointer-events: none;
+      -webkit-mask-image: var(--sticker-src);
+      mask-image: var(--sticker-src);
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="board-nav">
+    <a href="../Toolkits/mls.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back
+    </a>
+    <div class="board-nav-title">
+      Microbiology Investigation Board
+      <span class="board-progress-tag" id="progressTag">0 / 5</span>
+    </div>
+    <button class="menu-btn" id="menuBtn" onclick="toggleSidePanel()" aria-label="Open instructions">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- Close-the-Case Popup (shown after returning from lab) -->
+  <div class="case-popup-overlay" id="closeCasePopup" onclick="if(event.target===this)hideCloseCasePopup()">
+    <div class="case-popup">
+      <h3>Let's Close the Case!</h3>
+      <p>Grab the chalk to draw lines from the patient case, connect the right evidence on the board, and reveal the bacterial suspect.</p>
+      <button type="button" class="case-popup-btn" onclick="hideCloseCasePopup()">Got it</button>
+    </div>
+  </div>
+
+  <!-- Side Panel Overlay -->
+  <div class="side-panel-overlay" id="sidePanelOverlay" onclick="toggleSidePanel()"></div>
+  <div class="side-panel" id="sidePanel">
+    <img class="side-panel-img" src="../Sources/mls-lab/mls-sideMenu.png" alt="Instructions" />
+    <button class="side-panel-close" onclick="toggleSidePanel()" aria-label="Close instructions">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+  </div>
+
+  <!-- Cork Board Canvas -->
+  <div class="cork-board" id="corkBoard">
+    <svg class="connections-layer" id="connLayer"></svg>
+
+    <!-- Section labels -->
+    <div class="board-label" style="top:14px;left:20px;transform:rotate(-0.5deg);">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5a3e24" stroke-width="2" style="vertical-align:-2px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+      Patient Case Files
+    </div>
+    <span class="empty-label" id="clueLabel" style="top:440px;left:50%;transform:translateX(-50%);">Collected Clues</span>
+    <div class="board-label" style="top:700px;left:20px;transform:rotate(0.5deg);">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5a3e24" stroke-width="2" style="vertical-align:-2px;"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Bacterial Suspects
+    </div>
+  </div>
+
+  <!-- Screenshot countdown overlay -->
+  <div class="countdown-overlay" id="countdownOverlay">
+    <div class="countdown-number" id="countdownNumber">3</div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="tool-btn move-tool active" id="moveBtn" onclick="setTool('move')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+      Move
+    </button>
+    <button class="tool-btn chalk-tool" id="chalkBtn" onclick="setTool('chalk')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18"/></svg>
+      Chalk
+    </button>
+    <button class="tool-btn screenshot-tool" id="screenshotBtn" onclick="takeScreenshot()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Screenshot
+    </button>
+    <div class="tool-divider"></div>
+    <button class="tool-btn clear-btn" onclick="clearConnections()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+      Clear Lines
+    </button>
+  </div>
+
+  <script>
+    // ── Side Panel Toggle ──
+    function toggleSidePanel() {
+      document.getElementById('sidePanel').classList.toggle('open');
+      document.getElementById('sidePanelOverlay').classList.toggle('open');
+    }
+
+    function hideCloseCasePopup() {
+      document.getElementById('closeCasePopup').classList.remove('open');
+    }
+
+    // ── Screenshot with 3-2-1 countdown ──
+    var screenshotInProgress = false;
+    function takeScreenshot() {
+      if (screenshotInProgress) return;
+      if (typeof html2canvas !== 'function') {
+        alert('Screenshot tool failed to load. Please check your connection and try again.');
+        return;
+      }
+      screenshotInProgress = true;
+      var btn = document.getElementById('screenshotBtn');
+      btn.disabled = true;
+
+      var overlay = document.getElementById('countdownOverlay');
+      var numEl = document.getElementById('countdownNumber');
+      var toolbar = document.querySelector('.toolbar');
+
+      function showNum(n) {
+        numEl.textContent = n;
+        // Re-trigger pulse animation
+        numEl.style.animation = 'none';
+        void numEl.offsetWidth;
+        numEl.style.animation = '';
+      }
+
+      overlay.classList.add('show');
+      showNum(3);
+      setTimeout(function() { showNum(2); }, 1000);
+      setTimeout(function() { showNum(1); }, 2000);
+      setTimeout(function() {
+        overlay.classList.remove('show');
+        // Hide toolbar so it's not in the capture
+        if (toolbar) toolbar.style.visibility = 'hidden';
+
+        var board = document.getElementById('corkBoard');
+        html2canvas(board, {
+          backgroundColor: null,
+          useCORS: true,
+          scale: window.devicePixelRatio > 1 ? 2 : 1,
+          onclone: function(clonedDoc) {
+            // Strip shimmer overlays from the clone — html2canvas renders them
+            // as a faded wash over the bacteria PNGs.
+            clonedDoc.querySelectorAll('#corkBoard .shimmer-overlay').forEach(function(el) {
+              el.style.display = 'none';
+            });
+            // The stickerAppear animation re-fires on the clone, so html2canvas
+            // captures the sticker mid-fade. Pin it to the final state.
+            clonedDoc.querySelectorAll('#corkBoard .bac-sticker').forEach(function(el) {
+              el.style.animation = 'none';
+              el.style.opacity = '1';
+              el.style.transform = 'scale(1) rotate(0deg)';
+            });
+            // html2canvas v1 mishandles `aspect-ratio` and percent sizing on
+            // imgs inside flex containers, which distorts the suspect cards.
+            // Lock each card to pixel dimensions read from the live DOM, and
+            // reveal the full PNG (bacteria + name banner) for the screenshot.
+            var origCards  = document.querySelectorAll('#corkBoard .suspect-card');
+            var cloneCards = clonedDoc.querySelectorAll('#corkBoard .suspect-card');
+            origCards.forEach(function(origCard, i) {
+              var cloneCard = cloneCards[i];
+              if (!cloneCard) return;
+              var origWrap  = origCard.querySelector('.suspect-img-wrap');
+              var cloneWrap = cloneCard.querySelector('.suspect-img-wrap');
+              if (!origWrap || !cloneWrap) return;
+              var rect = origWrap.getBoundingClientRect();
+              // The wrap stays the same size, but we drop aspect-ratio + overflow
+              // and let the img show its full content (including the name banner)
+              cloneWrap.style.width  = rect.width  + 'px';
+              cloneWrap.style.height = rect.width  + 'px'; // square
+              cloneWrap.style.aspectRatio = 'auto';
+              cloneWrap.style.overflow = 'visible';
+              var cloneImg = cloneWrap.querySelector('img');
+              if (cloneImg) {
+                cloneImg.style.width  = rect.width + 'px';
+                cloneImg.style.height = rect.width + 'px';
+                cloneImg.style.objectFit = 'contain';
+              }
+            });
+          }
+        }).then(function(canvas) {
+          var ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+          var link = document.createElement('a');
+          link.download = 'mls-investigation-board-' + ts + '.png';
+          link.href = canvas.toDataURL('image/png');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }).catch(function(err) {
+          console.error('Screenshot failed:', err);
+          alert('Could not capture the board. Please try again.');
+        }).finally(function() {
+          if (toolbar) toolbar.style.visibility = '';
+          btn.disabled = false;
+          screenshotInProgress = false;
+        });
+      }, 3000);
+    }
+
+    // Auto-open side panel only on first launch from mls.html (?launch=1)
+    // Show "Close the Case" popup when returning from the lab (?closeCase=1)
+    document.addEventListener('DOMContentLoaded', function() {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('launch') === '1') {
+        document.getElementById('sidePanel').classList.add('open');
+        document.getElementById('sidePanelOverlay').classList.add('open');
+      } else if (params.get('closeCase') === '1') {
+        document.getElementById('closeCasePopup').classList.add('open');
+      }
+      // Strip the param so refresh / back-nav doesn't re-trigger
+      if (params.has('launch') || params.has('closeCase')) {
+        history.replaceState(null, '', window.location.pathname);
+      }
+    });
+
+    // Case-specific colors: pin class + chalk line hex
+    var caseColors = {
+      stephen:   { pin: 'pin-green',  line: '#37662D' },
+      colin:     { pin: 'pin-blue',   line: '#2F20F4' },
+      lisa:      { pin: 'pin-purple', line: '#9b59b6' },
+      mona:      { pin: 'pin-mint', line: '#7CDEDC' },
+      vishal:    { pin: 'pin-orange', line: '#FFA737' },
+      stephanie: { pin: 'pin-yellow', line: '#f1c40f' },
+      coco:      { pin: 'pin-pink',   line: '#e91e8c' }
+    };
+    // Case IDs in display order (matches cases array from data.json)
+    var caseOrder = ['stephen', 'colin', 'lisa', 'mona', 'vishal', 'stephanie', 'coco'];
+
+    // Profile images for patient cards (keyed by case id)
+    var profileImages = {
+      stephen: "../Sources/mls-board/mls-stephen-002.PNG",
+      colin: "../Sources/mls-board/mls-colin-002.PNG",
+      lisa: "../Sources/mls-board/mls-lisa-002.PNG",
+      mona: "../Sources/mls-board/mls-mona-002.PNG",
+      vishal: "../Sources/mls-board/mls-vishal-002.PNG",
+      stephanie: "../Sources/mls-board/mls-stephanie-002.PNG",
+      coco: "../Sources/mls-board/mls-coco-002.PNG"
+
+
+    };
+    var suspectImages = {
+      "Staphylococcus aureus": "../Sources/mls-board/mls-staph.png",
+      "Escherichia coli": "../Sources/mls-board/mls-ecoli.png",
+      "Pseudomonas aeruginosa": "../Sources/mls-board/mls-pseudomonas.png",
+      "Listeria monocytogenes": "../Sources/mls-board/mls-listeria.png",
+      "Vibrio vulnificus": "../Sources/mls-board/mls-vibrio.png",
+      "Streptococcus pyogenes": "../Sources/mls-board/mls-groupA.png",
+      "Streptococcus pneumoniae": "../Sources/mls-board/mls-pneumoniae.png"
+    };
+    // Mixed display order: indices into suspects array (7 suspects)
+    // 0:S.aureus 1:E.coli 2:Pseudomonas 3:Listeria 4:Vibrio 5:S.pyogenes 6:S.pneumoniae
+    var suspectDisplayOrder = [6, 0, 4, 3, 5, 1, 2];
+
+    // Pre-connected edges (last step: test result -> bacterial suspect), tagged with case
+    var preConnectedEdges = [
+      ['clue-5', 'suspect-0', 'stephen'],     // Staph Latex + -> S.aureus
+      ['clue-13', 'suspect-1', 'colin'],      // Indole + -> E.coli
+      ['clue-16', 'suspect-3', 'lisa'],       // Small colony -> Listeria
+      ['clue-11', 'suspect-2', 'mona'],       // Metallic sheen + -> Pseudomonas
+      ['clue-12', 'suspect-4', 'vishal'],     // Metallic sheen - -> Vibrio
+      ['clue-7', 'suspect-5', 'stephanie'],   // Strep Latex + (Group A) -> S.pyogenes
+      ['clue-8', 'suspect-6', 'coco']         // Strep Latex - -> S.pneumoniae
+    ];
+
+    // Trace connections for a specific case to find the patient it links to
+    function traceToPatients(nodeId, filterCaseId) {
+      var visited = {};
+      var patients = [];
+      var queue = [nodeId];
+      while (queue.length) {
+        var cur = queue.shift();
+        if (visited[cur]) continue;
+        visited[cur] = true;
+        if (cur.indexOf('patient-') === 0) {
+          patients.push(cur.replace('patient-', ''));
+          continue;
+        }
+        connections.forEach(function(c) {
+          if (filterCaseId && c.caseId !== filterCaseId) return;
+          if (c.fromId === cur && !visited[c.toId]) queue.push(c.toId);
+          if (c.toId === cur && !visited[c.fromId]) queue.push(c.fromId);
+        });
+      }
+      return patients;
+    }
+
+    function isValidEdge(a, b) {
+      // Check if this edge exists in any case's required edges
+      return Object.keys(caseRequiredEdges).some(function(caseId) {
+        return caseRequiredEdges[caseId].some(function(edge) {
+          return (edge[0] === a && edge[1] === b) || (edge[1] === a && edge[0] === b);
+        });
+      });
+    }
+
+    function edgeExists(a, b, caseId) {
+      return connections.some(function(c) {
+        var sameEdge = (c.fromId === a && c.toId === b) || (c.fromId === b && c.toId === a);
+        if (caseId) return sameEdge && c.caseId === caseId;
+        return sameEdge;
+      });
+    }
+
+    // Determine which case a new edge belongs to by tracing back to a patient
+    function detectCase(fromId, toId) {
+      // If one end is a patient, case is known
+      if (fromId.indexOf('patient-') === 0) return fromId.replace('patient-', '');
+      if (toId.indexOf('patient-') === 0) return toId.replace('patient-', '');
+
+      // Find all cases that include this edge in their required path
+      var candidateCases = [];
+      Object.keys(caseRequiredEdges).forEach(function(caseId) {
+        var hasEdge = caseRequiredEdges[caseId].some(function(edge) {
+          return (edge[0] === fromId && edge[1] === toId) || (edge[1] === fromId && edge[0] === toId);
+        });
+        if (hasEdge) candidateCases.push(caseId);
+      });
+
+      // Only accept if that case's chain has actually reached the FROM node
+      // (i.e., the patient is reachable through that case's own connections)
+      for (var i = 0; i < candidateCases.length; i++) {
+        var caseId = candidateCases[i];
+        if (edgeExists(fromId, toId, caseId)) continue; // already drawn for this case
+
+        var patients = traceToPatients(fromId, caseId).concat(traceToPatients(toId, caseId));
+        if (patients.indexOf(caseId) !== -1) return caseId;
+      }
+
+      // No case with a connected chain has this edge — reject
+      return null;
+    }
+
+    // ── State ──
+    var currentTool = 'move'; // 'move' or 'chalk'
+    var selectedItem = null;
+    var connections = []; // { fromId, toId, correct, preConnected, caseId }
+    var drawingLine = null; // { fromId, fromSide, startX, startY }
+    var allItems = {}; // id -> { el, x, y }
+
+    // ── Tool switching ──
+    function setTool(tool) {
+      currentTool = tool;
+      document.getElementById('moveBtn').classList.toggle('active', tool === 'move');
+      document.getElementById('chalkBtn').classList.toggle('active', tool === 'chalk');
+      document.getElementById('corkBoard').classList.toggle('chalk-mode', tool === 'chalk');
+      deselectAll();
+    }
+
+    function deselectAll() {
+      if (selectedItem) {
+        selectedItem.classList.remove('selected');
+        selectedItem = null;
+      }
+    }
+
+    // ── Create canvas item with selection UI ──
+    function createCanvasItem(id, x, y, innerHtml, extraClass) {
+      var el = document.createElement('div');
+      el.className = 'canvas-item' + (extraClass ? ' ' + extraClass : '');
+      el.id = id;
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.innerHTML = innerHtml +
+        '<div class="select-border"></div>' +
+        '<div class="corner-handle tl"></div>' +
+        '<div class="corner-handle tr"></div>' +
+        '<div class="corner-handle bl"></div>' +
+        '<div class="corner-handle br"></div>' +
+        '<div class="conn-dot top" data-side="top"></div>' +
+        '<div class="conn-dot bottom" data-side="bottom"></div>' +
+        '<div class="conn-dot left" data-side="left"></div>' +
+        '<div class="conn-dot right" data-side="right"></div>';
+
+      document.getElementById('corkBoard').appendChild(el);
+      allItems[id] = { el: el, x: x, y: y };
+      setupDrag(el, id);
+      setupConnDots(el, id);
+      return el;
+    }
+
+    // ── Drag & Drop ──
+    function setupDrag(el, id) {
+      var isDragging = false;
+      var startMX, startMY, startX, startY;
+
+      el.addEventListener('mousedown', function(e) {
+        if (e.target.classList.contains('conn-dot')) return;
+
+        // ── Chalk mode: start drawing from anywhere on the item ──
+        if (currentTool === 'chalk') {
+          e.preventDefault();
+          e.stopPropagation();
+
+          var board = document.getElementById('corkBoard');
+          var bRect = board.getBoundingClientRect();
+          var mx = e.clientX - bRect.left;
+          var my = e.clientY - bRect.top;
+
+          // Pick the closest edge side
+          var item = allItems[id];
+          var w = el.offsetWidth, h = el.offsetHeight;
+          var distTop    = Math.abs(my - item.y);
+          var distBottom = Math.abs(my - (item.y + h));
+          var distLeft   = Math.abs(mx - item.x);
+          var distRight  = Math.abs(mx - (item.x + w));
+          var minDist = Math.min(distTop, distBottom, distLeft, distRight);
+          var side = 'top';
+          if (minDist === distBottom) side = 'bottom';
+          else if (minDist === distLeft) side = 'left';
+          else if (minDist === distRight) side = 'right';
+
+          var pt = getConnPoint(id, side);
+          drawingLine = { fromId: id, fromSide: side, startX: pt.x, startY: pt.y };
+
+          var svg = document.getElementById('connLayer');
+          var tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          tempLine.setAttribute('class', 'conn-line-drawing');
+          tempLine.setAttribute('x1', pt.x);
+          tempLine.setAttribute('y1', pt.y);
+          tempLine.setAttribute('x2', pt.x);
+          tempLine.setAttribute('y2', pt.y);
+          tempLine.id = 'tempLine';
+          svg.appendChild(tempLine);
+
+          function onChalkMove(e2) {
+            var cmx = e2.clientX - bRect.left;
+            var cmy = e2.clientY - bRect.top;
+            tempLine.setAttribute('x2', cmx);
+            tempLine.setAttribute('y2', cmy);
+          }
+          function onChalkUp(e2) {
+            document.removeEventListener('mousemove', onChalkMove);
+            document.removeEventListener('mouseup', onChalkUp);
+            var temp = document.getElementById('tempLine');
+            if (temp) temp.remove();
+
+            var target = document.elementFromPoint(e2.clientX, e2.clientY);
+            var targetItem = target ? target.closest('.canvas-item') : null;
+
+            if (!targetItem || targetItem.id === id) {
+              var snapRadius = 40;
+              var smx = e2.clientX - bRect.left;
+              var smy = e2.clientY - bRect.top;
+              var bestDist = Infinity;
+              var bestId = null;
+              Object.keys(allItems).forEach(function(itemId) {
+                if (itemId === id) return;
+                var itm = allItems[itemId];
+                var cx = itm.x + itm.el.offsetWidth / 2;
+                var cy = itm.y + itm.el.offsetHeight / 2;
+                var hw = itm.el.offsetWidth / 2 + snapRadius;
+                var hh = itm.el.offsetHeight / 2 + snapRadius;
+                if (smx >= cx - hw && smx <= cx + hw && smy >= cy - hh && smy <= cy + hh) {
+                  var dist = Math.sqrt((smx - cx) * (smx - cx) + (smy - cy) * (smy - cy));
+                  if (dist < bestDist) {
+                    bestDist = dist;
+                    bestId = itemId;
+                  }
+                }
+              });
+              if (bestId) targetItem = allItems[bestId].el;
+            }
+
+            if (targetItem && targetItem.id !== id) {
+              var targetId = targetItem.id;
+              var detectedCase = isValidEdge(id, targetId) ? detectCase(id, targetId) : null;
+              if (detectedCase && !edgeExists(id, targetId, detectedCase)) {
+                connections.push({ fromId: id, toId: targetId, correct: true, caseId: detectedCase });
+                redrawConnections();
+                animateCorrectConnection(id, targetId, detectedCase);
+                persistConnections();
+              } else if (detectedCase) {
+                // Already drawn for this case — still give feedback
+                animateCorrectConnection(id, targetId, detectedCase);
+              } else {
+                // Wrong connection or no case chain reaches here
+                animateWrongConnection(id, targetId);
+              }
+            }
+            drawingLine = null;
+          }
+          document.addEventListener('mousemove', onChalkMove);
+          document.addEventListener('mouseup', onChalkUp);
+          return;
+        }
+
+        // ── Move mode ──
+        if (currentTool !== 'move') return;
+        e.preventDefault();
+
+        // Select
+        deselectAll();
+        selectedItem = el;
+        el.classList.add('selected');
+
+        isDragging = true;
+        el.classList.add('dragging');
+        var board = document.getElementById('corkBoard');
+        var bRect = board.getBoundingClientRect();
+        startMX = e.clientX;
+        startMY = e.clientY;
+        startX = allItems[id].x;
+        startY = allItems[id].y;
+
+        function onMove(e2) {
+          if (!isDragging) return;
+          var dx = e2.clientX - startMX;
+          var dy = e2.clientY - startMY;
+          var nx = Math.max(0, startX + dx);
+          var ny = Math.max(0, startY + dy);
+          el.style.left = nx + 'px';
+          el.style.top = ny + 'px';
+          allItems[id].x = nx;
+          allItems[id].y = ny;
+          redrawConnections();
+        }
+        function onUp() {
+          isDragging = false;
+          el.classList.remove('dragging');
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+
+      // Click to select (no drag)
+      el.addEventListener('click', function(e) {
+        if (currentTool !== 'move') return;
+        if (e.target.classList.contains('conn-dot')) return;
+        deselectAll();
+        selectedItem = el;
+        el.classList.add('selected');
+      });
+    }
+
+    // ── Connection Dots (chalk drawing) ──
+    function setupConnDots(el, id) {
+      var dots = el.querySelectorAll('.conn-dot');
+      dots.forEach(function(dot) {
+        dot.addEventListener('mousedown', function(e) {
+          if (currentTool !== 'chalk') return;
+          e.preventDefault();
+          e.stopPropagation();
+
+          var board = document.getElementById('corkBoard');
+          var bRect = board.getBoundingClientRect();
+          var side = dot.getAttribute('data-side');
+          var pt = getConnPoint(id, side);
+
+          drawingLine = { fromId: id, fromSide: side, startX: pt.x, startY: pt.y };
+
+          // Create temp SVG line
+          var svg = document.getElementById('connLayer');
+          var tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          tempLine.setAttribute('class', 'conn-line-drawing');
+          tempLine.setAttribute('x1', pt.x);
+          tempLine.setAttribute('y1', pt.y);
+          tempLine.setAttribute('x2', pt.x);
+          tempLine.setAttribute('y2', pt.y);
+          tempLine.id = 'tempLine';
+          svg.appendChild(tempLine);
+
+          function onMove(e2) {
+            var mx = e2.clientX - bRect.left;
+            var my = e2.clientY - bRect.top;
+            tempLine.setAttribute('x2', mx);
+            tempLine.setAttribute('y2', my);
+          }
+          function onUp(e2) {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            var temp = document.getElementById('tempLine');
+            if (temp) temp.remove();
+
+            // Find target canvas-item: check element under cursor, then walk up to .canvas-item
+            var target = document.elementFromPoint(e2.clientX, e2.clientY);
+            var targetItem = target ? target.closest('.canvas-item') : null;
+
+            // If not directly on an item, find the nearest item within snap radius
+            if (!targetItem || targetItem.id === id) {
+              var snapRadius = 40;
+              var mx = e2.clientX - bRect.left;
+              var my = e2.clientY - bRect.top;
+              var bestDist = Infinity;
+              var bestId = null;
+              Object.keys(allItems).forEach(function(itemId) {
+                if (itemId === id) return;
+                var item = allItems[itemId];
+                var cx = item.x + item.el.offsetWidth / 2;
+                var cy = item.y + item.el.offsetHeight / 2;
+                var hw = item.el.offsetWidth / 2 + snapRadius;
+                var hh = item.el.offsetHeight / 2 + snapRadius;
+                // Check if mouse is within expanded bounding box
+                if (mx >= cx - hw && mx <= cx + hw && my >= cy - hh && my <= cy + hh) {
+                  var dist = Math.sqrt((mx - cx) * (mx - cx) + (my - cy) * (my - cy));
+                  if (dist < bestDist) {
+                    bestDist = dist;
+                    bestId = itemId;
+                  }
+                }
+              });
+              if (bestId) {
+                targetItem = allItems[bestId].el;
+              }
+            }
+
+            if (targetItem && targetItem.id !== id) {
+              var targetId = targetItem.id;
+              var detectedCase = isValidEdge(id, targetId) ? detectCase(id, targetId) : null;
+              if (detectedCase && !edgeExists(id, targetId, detectedCase)) {
+                // New connection for this case
+                connections.push({ fromId: id, toId: targetId, correct: true, caseId: detectedCase });
+                redrawConnections();
+                animateCorrectConnection(id, targetId, detectedCase);
+                persistConnections();
+              } else if (detectedCase) {
+                // Already drawn for this case — still give feedback
+                animateCorrectConnection(id, targetId, detectedCase);
+              } else {
+                // Wrong connection or no case chain reaches here
+                animateWrongConnection(id, targetId);
+              }
+            }
+            drawingLine = null;
+          }
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        });
+      });
+    }
+
+    // ── Get connection point position ──
+    function getConnPoint(id, side) {
+      var item = allItems[id];
+      if (!item) return { x: 0, y: 0 };
+      var el = item.el;
+      var w = el.offsetWidth;
+      var h = el.offsetHeight;
+      var x = item.x;
+      var y = item.y;
+      switch (side) {
+        case 'top':    return { x: x + w / 2, y: y };
+        case 'bottom': return { x: x + w / 2, y: y + h };
+        case 'left':   return { x: x, y: y + h / 2 };
+        case 'right':  return { x: x + w, y: y + h / 2 };
+      }
+      return { x: x, y: y };
+    }
+
+    function getItemCenter(id) {
+      var item = allItems[id];
+      if (!item) return { x: 0, y: 0 };
+      return {
+        x: item.x + item.el.offsetWidth / 2,
+        y: item.y + item.el.offsetHeight / 2
+      };
+    }
+
+    // ── Redraw all connections ──
+    function redrawConnections() {
+      var svg = document.getElementById('connLayer');
+      var board = document.getElementById('corkBoard');
+      svg.setAttribute('width', board.scrollWidth);
+      svg.setAttribute('height', board.scrollHeight);
+
+      // Remove existing permanent lines (but not particles)
+      svg.querySelectorAll('.conn-line').forEach(function(l) { l.remove(); });
+
+      // Group connections by edge key to calculate offsets for parallel lines
+      var edgeGroups = {};
+      connections.forEach(function(c, idx) {
+        var key = [c.fromId, c.toId].sort().join('|');
+        if (!edgeGroups[key]) edgeGroups[key] = [];
+        edgeGroups[key].push(idx);
+      });
+
+      connections.forEach(function(c, idx) {
+        var from = getItemCenter(c.fromId);
+        var to = getItemCenter(c.toId);
+        if (!from || !to) return;
+
+        // Calculate perpendicular offset for parallel lines
+        var key = [c.fromId, c.toId].sort().join('|');
+        var group = edgeGroups[key];
+        var offsetPx = 0;
+        if (group.length > 1) {
+          var posInGroup = group.indexOf(idx);
+          var total = group.length;
+          offsetPx = (posInGroup - (total - 1) / 2) * 5; // 5px spacing
+        }
+
+        // Perpendicular direction
+        var dx = to.x - from.x;
+        var dy = to.y - from.y;
+        var len = Math.sqrt(dx * dx + dy * dy) || 1;
+        var nx = -dy / len * offsetPx;
+        var ny = dx / len * offsetPx;
+
+        var x1 = from.x + nx, y1 = from.y + ny;
+        var x2 = to.x + nx, y2 = to.y + ny;
+
+        var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        var cls = 'conn-line';
+        if (c.preConnected) cls += ' pre-connected';
+        else if (c.correct) cls += ' correct-line';
+        line.setAttribute('class', cls);
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('data-from', c.fromId);
+        line.setAttribute('data-to', c.toId);
+        if (c.caseId) line.setAttribute('data-case', c.caseId);
+
+        // Set line color based on case
+        var lineColor = '#8b7355'; // fallback brown
+        if (c.caseId && caseColors[c.caseId]) {
+          lineColor = caseColors[c.caseId].line;
+        }
+        if (c.preConnected && !c.revealed) {
+          // White dashed line until revealed
+          line.style.stroke = '#ffffff';
+        } else if (c.preConnected && c.revealed) {
+          // Revealed: solid case-colored line
+          line.classList.add('revealed');
+          line.style.stroke = lineColor;
+          line.style.opacity = '0.85';
+          line.style.filter = 'drop-shadow(0 0 2px ' + lineColor + '40)';
+        } else {
+          line.style.stroke = lineColor;
+          line.style.filter = 'drop-shadow(0 0 2px ' + lineColor + '40)';
+        }
+
+        svg.appendChild(line);
+      });
+    }
+
+    function clearConnections() {
+      // Keep pre-connected lines, only clear user-drawn ones
+      connections = connections.filter(function(c) { return c.preConnected; });
+      // Reset all pre-connected lines back to white dashed
+      connections.forEach(function(c) { c.revealed = false; });
+      revealedCases = {};
+      // Remove any awarded reward stickers from the board
+      awardedStickers = {};
+      document.querySelectorAll('#corkBoard .bac-sticker').forEach(function(s) { s.remove(); });
+      redrawConnections();
+      persistConnections();
+    }
+
+    function persistConnections() {
+      if (typeof setBoardConnections !== 'function') return;
+      var userEdges = connections
+        .filter(function(c) { return !c.preConnected; })
+        .map(function(c) { return { fromId: c.fromId, toId: c.toId, caseId: c.caseId }; });
+      setBoardConnections('mls', userEdges);
+    }
+
+    // ── Correct connection animation ──
+    function animateCorrectConnection(fromId, toId, caseId) {
+      var svg = document.getElementById('connLayer');
+      // Find the line for this specific case
+      var lines = svg.querySelectorAll('.conn-line.correct-line');
+      var targetLine = null;
+      lines.forEach(function(l) {
+        var matchEdge = (l.getAttribute('data-from') === fromId && l.getAttribute('data-to') === toId) ||
+            (l.getAttribute('data-from') === toId && l.getAttribute('data-to') === fromId);
+        var matchCase = !caseId || l.getAttribute('data-case') === caseId;
+        if (matchEdge && matchCase) targetLine = l;
+      });
+
+      if (targetLine) {
+        // Calculate line length for dasharray
+        var x1 = parseFloat(targetLine.getAttribute('x1'));
+        var y1 = parseFloat(targetLine.getAttribute('y1'));
+        var x2 = parseFloat(targetLine.getAttribute('x2'));
+        var y2 = parseFloat(targetLine.getAttribute('y2'));
+        var len = Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+
+        // Pulse animation: line draws from start to end
+        targetLine.style.strokeDasharray = len;
+        targetLine.style.strokeDashoffset = len;
+        targetLine.style.animation = 'none';
+        targetLine.offsetHeight; // force reflow
+        targetLine.style.animation = 'linePulse 0.6s ease-out forwards';
+
+        // Glow effect in case color
+        var glowColor = (caseId && caseColors[caseId]) ? caseColors[caseId].line : '#27ae60';
+        targetLine.style.filter = 'drop-shadow(0 0 6px ' + glowColor + ')';
+
+        // After pulse, clear dash styles and check for sticker rewards
+        setTimeout(function() {
+          targetLine.style.strokeDasharray = 'none';
+          targetLine.style.strokeDashoffset = '0';
+          targetLine.style.animation = 'none';
+          targetLine.style.filter = 'drop-shadow(0 0 2px ' + glowColor + '40)';
+          checkAllCaseStickers();
+        }, 650);
+      }
+    }
+
+    // ── Wrong connection animation ──
+    function animateWrongConnection(fromId, toId) {
+      var svg = document.getElementById('connLayer');
+      var from = getItemCenter(fromId);
+      var to = getItemCenter(toId);
+
+      // Draw a temporary wrong line that fades
+      var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('class', 'conn-line wrong-line');
+      line.setAttribute('x1', from.x);
+      line.setAttribute('y1', from.y);
+      line.setAttribute('x2', to.x);
+      line.setAttribute('y2', to.y);
+      svg.appendChild(line);
+
+      // Shake the target endpoint
+      var targetEl = allItems[toId] ? allItems[toId].el : null;
+      var sourceEl = allItems[fromId] ? allItems[fromId].el : null;
+      if (targetEl) {
+        targetEl.classList.add('shake-wrong');
+        setTimeout(function() { targetEl.classList.remove('shake-wrong'); }, 450);
+      }
+      if (sourceEl) {
+        sourceEl.classList.add('shake-wrong');
+        setTimeout(function() { sourceEl.classList.remove('shake-wrong'); }, 450);
+      }
+
+      // Remove the wrong line after animation
+      setTimeout(function() { line.remove(); }, 550);
+    }
+
+    // ── Bacteria Sticker Reward System ──
+    var stickerSfx = new Audio('../Sources/mls-lab/cartoon-music-soundtrack-glock-correct-answer-504462.mp3');
+
+    // Sticker images keyed by case id (add more as assets become available)
+    var bacStickerImages = {
+      stephen: '../Sources/mls-lab/stephen-sticker-bac.png',
+      colin: '../Sources/mls-lab/colin-sticker-bac.png',
+      lisa: '../Sources/mls-lab/lisa-sticker-bac.png',
+      mona: '../Sources/mls-lab/mona-sticker-bac.png',
+      vishal: '../Sources/mls-lab/vishal-sticker-bac.png',
+      stephanie: '../Sources/mls-lab/stephanie-sticker-bac.png',
+      coco: '../Sources/mls-lab/coco-sticker-bac.png'
+    };
+
+    // Required edges per case (patient → clue chain, NOT including pre-connected last step)
+    var caseRequiredEdges = {
+      stephen:   [['patient-stephen', 'clue-0'], ['clue-0', 'clue-3'], ['clue-3', 'clue-5']],
+      colin:     [['patient-colin', 'clue-1'], ['clue-1', 'clue-10'], ['clue-10', 'clue-13']],
+      lisa:      [['patient-lisa', 'clue-2'], ['clue-2', 'clue-3'], ['clue-3', 'clue-16']],
+      mona:      [['patient-mona', 'clue-1'], ['clue-1', 'clue-9'], ['clue-9', 'clue-11']],
+      vishal:    [['patient-vishal', 'clue-1'], ['clue-1', 'clue-9'], ['clue-9', 'clue-12']],
+      stephanie: [['patient-stephanie', 'clue-0'], ['clue-0', 'clue-4'], ['clue-4', 'clue-7']],
+      coco:      [['patient-coco', 'clue-0'], ['clue-0', 'clue-4'], ['clue-4', 'clue-8']]
+    };
+
+    // Map case id → suspect element id
+    var caseToSuspect = {
+      stephen: 'suspect-0',
+      colin: 'suspect-1',
+      lisa: 'suspect-3',
+      mona: 'suspect-2',
+      vishal: 'suspect-4',
+      stephanie: 'suspect-5',
+      coco: 'suspect-6'
+    };
+
+    var awardedStickers = {}; // track which stickers already shown
+    var revealedCases = {}; // track which pre-connected lines have been revealed
+
+    // Reveal pre-connected dashed line → solid colored line when all user edges are drawn
+    function checkRevealPreConnected(caseId) {
+      if (revealedCases[caseId]) return;
+      var required = caseRequiredEdges[caseId];
+      if (!required) return;
+
+      var allDrawn = required.every(function(edge) {
+        return edgeExists(edge[0], edge[1], caseId);
+      });
+      if (!allDrawn) return;
+
+      revealedCases[caseId] = true;
+
+      // Mark the pre-connected connection as revealed
+      connections.forEach(function(c) {
+        if (c.preConnected && c.caseId === caseId) {
+          c.revealed = true;
+        }
+      });
+
+      // Redraw to show the change, then animate the reveal
+      redrawConnections();
+
+      // Find the newly revealed line and animate it
+      var svg = document.getElementById('connLayer');
+      var lineColor = caseColors[caseId] ? caseColors[caseId].line : '#ffffff';
+      var lines = svg.querySelectorAll('.conn-line.pre-connected.revealed');
+      lines.forEach(function(l) {
+        if (l.getAttribute('data-case') === caseId) {
+          var x1 = parseFloat(l.getAttribute('x1'));
+          var y1 = parseFloat(l.getAttribute('y1'));
+          var x2 = parseFloat(l.getAttribute('x2'));
+          var y2 = parseFloat(l.getAttribute('y2'));
+          var len = Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+
+          // Start white, then animate to case color
+          // Use style.stroke (CSS property) instead of setAttribute for transition support
+          l.removeAttribute('stroke');
+          l.style.stroke = '#ffffff';
+          l.style.opacity = '0.35';
+          l.style.strokeWidth = '2';
+          l.style.strokeDasharray = len;
+          l.style.strokeDashoffset = len;
+          l.style.transition = 'none';
+          l.offsetHeight; // force reflow
+
+          // Animate: draw-in + white→color + fade-in
+          l.style.transition = 'stroke-dashoffset 0.6s ease-out, stroke 0.6s ease-in-out, opacity 0.4s ease-out, stroke-width 0.3s';
+          l.style.stroke = lineColor;
+          l.style.opacity = '0.85';
+          l.style.strokeWidth = '3';
+          l.style.strokeDashoffset = '0';
+          l.style.filter = 'drop-shadow(0 0 2px ' + lineColor + '40)';
+
+          // After animation, clear dasharray
+          setTimeout(function() {
+            l.style.strokeDasharray = 'none';
+            l.style.strokeDashoffset = '0';
+            l.style.transition = '';
+          }, 700);
+        }
+      });
+    }
+
+    function checkCaseSticker(caseId, silent) {
+      if (awardedStickers[caseId]) return;
+      if (!bacStickerImages[caseId]) return;
+      if (!isCaseComplete('mls', caseId)) return;
+
+      // Check all required edges are connected
+      var required = caseRequiredEdges[caseId];
+      if (!required) return;
+      var allConnected = required.every(function(edge) {
+        return edgeExists(edge[0], edge[1], caseId);
+      });
+      if (!allConnected) return;
+
+      // Award sticker!
+      awardedStickers[caseId] = true;
+      var suspectId = caseToSuspect[caseId];
+      var suspectItem = allItems[suspectId];
+
+      // Change suspect pin color to match the patient's case color
+      var suspectPinEl = document.getElementById('suspect-pin-' + suspectId.replace('suspect-', ''));
+      if (suspectPinEl && caseColors[caseId]) {
+        suspectPinEl.className = 'pin ' + caseColors[caseId].pin;
+      }
+      if (!suspectItem) return;
+
+      // Position sticker slightly below the suspect card center
+      var el = suspectItem.el;
+      var stickerX = suspectItem.x + (el.offsetWidth / 2) - 60; // center the 120px sticker
+      var stickerY = suspectItem.y + el.offsetHeight - 20; // overlap bottom portion
+
+      var imgSrc = bacStickerImages[caseId];
+      var sticker = document.createElement('div');
+      sticker.className = 'bac-sticker';
+      sticker.style.left = stickerX + 'px';
+      sticker.style.top = stickerY + 'px';
+      sticker.style.setProperty('--sticker-src', 'url(' + imgSrc + ')');
+      sticker.innerHTML = '<img src="' + imgSrc + '" alt="' + caseId + ' bacteria sticker" />' +
+        '<div class="shimmer-overlay"></div>';
+      document.getElementById('corkBoard').appendChild(sticker);
+
+      // Make sticker draggable
+      (function(stickerEl, sx, sy) {
+        var pos = { x: sx, y: sy };
+        stickerEl.addEventListener('mousedown', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          stickerEl.style.cursor = 'grabbing';
+          var startMX = e.clientX, startMY = e.clientY;
+          var startX = pos.x, startY = pos.y;
+          function onMove(e2) {
+            pos.x = Math.max(0, startX + (e2.clientX - startMX));
+            pos.y = Math.max(0, startY + (e2.clientY - startMY));
+            stickerEl.style.left = pos.x + 'px';
+            stickerEl.style.top = pos.y + 'px';
+          }
+          function onUp() {
+            stickerEl.style.cursor = 'grab';
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+          }
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        });
+      })(sticker, stickerX, stickerY);
+
+      // Play SFX (skipped on initial restore)
+      if (!silent) {
+        stickerSfx.currentTime = 0;
+        stickerSfx.play();
+      }
+    }
+
+    function checkAllCaseStickers() {
+      Object.keys(caseRequiredEdges).forEach(function(caseId) {
+        checkRevealPreConnected(caseId);
+        checkCaseSticker(caseId);
+      });
+    }
+
+    // ── Click on board to deselect ──
+    document.getElementById('corkBoard').addEventListener('mousedown', function(e) {
+      if (e.target === this || e.target.classList.contains('connections-layer')) {
+        deselectAll();
+      }
+    });
+
+    // ── Build Board ──
+    fetch("../data.json")
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var tk = data.toolkits.mls;
+        var cases = tk.cases;
+        var suspects = tk.suspects;
+        var ids = cases.map(function(c) { return c.id; });
+        var done = getCompletedCount("mls", ids);
+        document.getElementById("progressTag").textContent = done + " / " + ids.length;
+
+        // ── Patient polaroids (top row, spaced out) ──
+        var startX = 30;
+        var cardSpacing = Math.min(190, Math.floor((1340 - 60) / Math.max(cases.length, 1)));
+        cases.forEach(function(c, i) {
+          var complete = isCaseComplete("mls", c.id);
+          var x = startX + i * cardSpacing;
+          var y = 50 + (i % 2 === 0 ? 0 : 18);
+          var rot = [-2, 1.5, -1, 2, -1.5, 1, -1.5][i] || 0;
+
+          var casePinClass = caseColors[c.id] ? caseColors[c.id].pin : '';
+          var html =
+            '<div class="polaroid" style="transform:rotate(' + rot + 'deg)">' +
+              '<div class="pin ' + casePinClass + '"></div>' +
+              '<a class="polaroid-btn' + (complete ? ' btn-solved' : '') + '" data-caseid="' + c.id + '" onclick="event.stopPropagation(); setCase(\'' + c.id + '\'); window.location.href=\'mls-case-detail.html\';">' +
+                (complete ? 'Review >' : 'Investigate >') +
+              '</a>' +
+              '<div class="polaroid-face" style="background:' + (profileImages[c.id] ? '#f5f0e8' : c.avatarColor + '20') + '">' +
+                (profileImages[c.id]
+                  ? '<img class="profile-img" src="' + profileImages[c.id] + '" alt="' + c.nickname + '" />'
+                  : '<div class="face-avatar" style="background:' + c.avatarColor + '">' + c.avatar + '</div>') +
+              '</div>' +
+              '<p class="polaroid-caption"><span class="case-num">Case #' + (i + 1) + '<br /></span> <span class="case-name">' + c.nickname + '</span></p>' +
+              (complete ? '<div class="solved-stamp">Solved</div>' : '') +
+            '</div>';
+
+          var el = createCanvasItem('patient-' + c.id, x, y, html);
+          el.style.cursor = 'grab';
+        });
+
+        // ── Fixed clue post-its (always visible, scattered) ──
+        document.getElementById('clueLabel').style.display = 'none';
+
+        var fixedClues = [
+          { text: "Gram + cocci",            type: "gram" },
+          { text: "Gram − rod",              type: "gram" },
+          { text: "Gram + rod",              type: "gram" },
+          { text: "Catalase +",              type: "positive" },
+          { text: "Catalase −",              type: "negative" },
+          { text: "Staph Latex +",           type: "positive" },
+          { text: "Staph Latex −",           type: "negative" },
+          { text: "Strep Latex + (Group A)", type: "positive" },
+          { text: "Strep Latex -",           type: "negative" },
+          { text: "Oxidase +",               type: "positive" },
+          { text: "Oxidase −",               type: "negative" },
+          { text: "Metallic sheen +",        type: "positive" },
+          { text: "Metallic sheen −",        type: "negative" },
+          { text: "Indole +",                type: "positive" },
+          { text: "Indole −",                type: "negative" },
+          { text: "Large colony",            type: "gram" },
+          { text: "Small colony",            type: "gram" }
+        ];
+
+        var clueScatter = [
+          // Row 1: Gram stains & early branch clues
+          { x: 80,   y: 310, r: -2 },     // 0: Gram + cocci
+          { x: 310,  y: 330, r: 1.5 },    // 1: Gram − rod
+          { x: 490,  y: 310, r: -1 },     // 2: Gram + rod
+          // Row 2: Second-tier tests
+          { x: 100,  y: 420, r: 2 },      // 3: Catalase +
+          { x: 680,  y: 320, r: -1.5 },   // 4: Catalase −
+          // Row 4: Deep results
+          { x: 170,  y: 600, r: 2.5 },    // 5: Staph Latex +
+          { x: 1150, y: 370, r: -1 },     // 6: Staph Latex −
+          // Row 3: Mid results
+          { x: 640,  y: 580, r: 1 },      // 7: Strep Latex + (Group A)
+          { x: 30,   y: 510, r: -2 },     // 8: Strep Latex -
+          // Row 2: Second-tier tests (cont.)
+          { x: 310,  y: 440, r: 1.5 },    // 9: Oxidase +
+          { x: 560,  y: 420, r: -1 },     // 10: Oxidase −
+          // Row 3–4: Deep results
+          { x: 1050, y: 600, r: 2 },      // 11: Metallic sheen +
+          { x: 290,  y: 530, r: -1.5 },   // 12: Metallic sheen −
+          { x: 860,  y: 520, r: 1 },      // 13: Indole +
+          { x: 780,  y: 430, r: -2 },     // 14: Indole −
+          { x: 960,  y: 450, r: 2 },      // 15: Large colony
+          { x: 490,  y: 600, r: -1.5 }    // 16: Small colony
+        ];
+
+        fixedClues.forEach(function(cl, i) {
+          var cls = 'clue-note';
+          if (cl.type === 'gram') cls += ' clue-gram';
+          else if (cl.type === 'positive') cls += ' clue-positive';
+          else cls += ' clue-negative';
+
+          var pos = clueScatter[i];
+          var html = '<div class="' + cls + '" style="transform:rotate(' + pos.r + 'deg)">' + cl.text + '</div>';
+          createCanvasItem('clue-' + i, pos.x, pos.y, html);
+        });
+
+        // ── Suspect cards (bottom zone, mixed order) ──
+        var suspStartX = 30;
+        var suspSpacing = Math.min(185, Math.floor((1340 - 60) / Math.max(suspectDisplayOrder.length, 1)));
+        suspectDisplayOrder.forEach(function(si, di) {
+          var s = suspects[si];
+          if (!s) return;
+
+          var matched = false;
+          cases.forEach(function(c) {
+            if (isCaseComplete("mls", c.id) && c.lab.correctOrganism === s.name) matched = true;
+          });
+
+          var imgSrc = suspectImages[s.name];
+          var imgHtml;
+          if (imgSrc) {
+            imgHtml = '<div class="suspect-img-wrap"><img src="' + imgSrc + '" alt="Suspect" /></div>';
+          } else {
+            imgHtml = '<div class="suspect-img-wrap placeholder"><span>?</span></div>';
+          }
+
+          var x = suspStartX + di * suspSpacing;
+          var y = 750 + (di % 2 === 0 ? 0 : 20);
+          var rot = [1, -1.5, 0.5, -1, 1.5, -0.5, 2][di] || 0;
+
+          var html =
+            '<div class="suspect-card' + (matched ? ' identified' : '') + '" style="transform:rotate(' + rot + 'deg)">' +
+              '<div class="pin pin-brown" id="suspect-pin-' + si + '"></div>' +
+              imgHtml +
+            '</div>';
+
+          createCanvasItem('suspect-' + si, x, y, html);
+        });
+
+        // Resize SVG
+        var board = document.getElementById('corkBoard');
+        var svg = document.getElementById('connLayer');
+        svg.setAttribute('width', board.scrollWidth);
+        svg.setAttribute('height', board.scrollHeight);
+
+        // ── Add pre-connected edges (last step -> suspect) + restore saved user lines ──
+        setTimeout(function() {
+          preConnectedEdges.forEach(function(edge) {
+            if (allItems[edge[0]] && allItems[edge[1]]) {
+              connections.push({ fromId: edge[0], toId: edge[1], correct: true, preConnected: true, caseId: edge[2] });
+            }
+          });
+
+          // Restore user-drawn connections persisted from previous session.
+          // Cleared only by Clear Lines (here) or Reset Progress (mls.html).
+          var savedEdges = (typeof getBoardConnections === 'function') ? getBoardConnections('mls') : null;
+          if (Array.isArray(savedEdges) && savedEdges.length) {
+            savedEdges.forEach(function(e) {
+              if (e && allItems[e.fromId] && allItems[e.toId] && !edgeExists(e.fromId, e.toId, e.caseId)) {
+                connections.push({ fromId: e.fromId, toId: e.toId, correct: true, caseId: e.caseId });
+              }
+            });
+            // Pre-mark fully-connected cases as revealed so the suspect line renders in case color
+            Object.keys(caseRequiredEdges).forEach(function(cid) {
+              var allDrawn = caseRequiredEdges[cid].every(function(edge) {
+                return edgeExists(edge[0], edge[1], cid);
+              });
+              if (allDrawn) {
+                revealedCases[cid] = true;
+                connections.forEach(function(c) {
+                  if (c.preConnected && c.caseId === cid) c.revealed = true;
+                });
+              }
+            });
+          }
+
+          redrawConnections();
+
+          // Re-show reward stickers for completed cases (silent — no SFX or animation pop)
+          Object.keys(caseRequiredEdges).forEach(function(cid) {
+            checkCaseSticker(cid, true);
+          });
+        }, 100);
+      });
+  </script>
+
+</body>
+</html>
