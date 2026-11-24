@@ -1720,8 +1720,8 @@
         document.getElementById("progressTag").textContent = done + " / " + ids.length;
 
         // ── Patient polaroids (top row, spaced out) ──
-        var startX = 30;
-        var cardSpacing = Math.min(190, Math.floor((1340 - 60) / Math.max(cases.length, 1)));
+        var startX = 28;
+        var cardSpacing = Math.min(190, Math.floor((1200 - 60) / Math.max(cases.length, 1)));
         cases.forEach(function(c, i) {
           var complete = isCaseComplete("mls", c.id);
           var x = startX + i * cardSpacing;
@@ -1809,8 +1809,8 @@
         });
 
         // ── Suspect cards (bottom zone, mixed order) ──
-        var suspStartX = 30;
-        var suspSpacing = Math.min(185, Math.floor((1340 - 60) / Math.max(suspectDisplayOrder.length, 1)));
+        var suspStartX = 28;
+        var suspSpacing = Math.min(185, Math.floor((1200 - 60) / Math.max(suspectDisplayOrder.length, 1)));
         suspectDisplayOrder.forEach(function(si, di) {
           var s = suspects[si];
           if (!s) return;
